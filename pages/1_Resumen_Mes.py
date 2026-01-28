@@ -149,9 +149,42 @@ energia["tipo_carga"] = (
 # Filtro por fechas
 # ---------------------------
 st.sidebar.header("Filtros")
-meses_act = frecuencias['Mes'].unique()
 
-mes_seleccionado = st.sidebar.selectbox("Elige Mes", meses_act)
+
+meses_es = {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+}
+
+mes_actual = meses_es[datetime.now().strftime("%B").lower()]
+
+
+
+
+
+
+meses_act = list(frecuencias["Mes"].unique())
+
+if mes_actual in meses_act:
+    index_default = meses_act.index(mes_actual)
+else:
+    index_default = 0  # fallback por si no existe
+
+mes_seleccionado = st.sidebar.selectbox(
+    "Elige Mes",
+    meses_act,
+    index=index_default
+)
 
 
 terminales = ["Todos"] + sorted(frecuencias["Terminal"].dropna().unique().tolist())
