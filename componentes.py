@@ -189,9 +189,7 @@ def subheader_custom(texto, size=20, color="black"):
     )
     
 
-# SUPABASE_URL = "https://utosozcbwjtpiozgzmku.supabase.co"
-# SUPABASE_KEY = "sb_publishable_ZINoBWouWjWjaoY9Na3o1Q_ci3sqcoE"
-# supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 supabase = create_client(
     st.secrets["SUPABASE_URL"],

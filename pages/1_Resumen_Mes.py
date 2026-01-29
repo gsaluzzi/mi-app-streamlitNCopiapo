@@ -287,11 +287,11 @@ habiles, sabados, domingos = dias_restantes_mes_detalle(transacciones_filtrado)
 prom_habiles, prom_sabados, prom_domingos =promedio_ingresos_por_tipo_dia(tabla_txn, "Fecha", "Recaudación")
 
 factor_faltante = habiles*prom_habiles+sabados*prom_sabados+domingos*prom_domingos
-
+# Factor_pago=(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
 
 recaudacion=recaudacion_actual+factor_faltante
 subsidio_fijo=621637500
-subsidio_variable=207212500*(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
+subsidio_variable=207212500
 # subsidio_variable=207212500*0.85
 total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 
@@ -365,14 +365,7 @@ def estilo_filas_ingreso(row):
         ] * len(row)
     return [""] * len(row)
 
-styled_table_ingresos = (
-    tabla_ingresos
-    .style
-    .apply(estilo_filas_ingreso, axis=1)
-    .format({
-        "Monto": lambda x: f"${x:,.0f}".replace(",", ".")
-    })
-)
+
 
 def estilo_filas_costo(row):
     if row["Costos"] == "Total Costos":
@@ -390,7 +383,7 @@ styled_table_costos = (
     })
 )
 
-tipo_factor=["","",""]
+tipo_factor=["Real","90%","100%"]
 
 fecha_max=(frecuencias["Fecha"].max()).strftime("%Y-%m-%d %H:%M")
 
@@ -475,8 +468,50 @@ col12, col13= st.columns([1,1])
 
 with col12:
     subheader_custom("Ingresos Proyectados", size=20)
+    subheader_custom("Escenario del Subsidio", size=14)
+    Factor_pago_1 = st.selectbox("Factor de Pago", tipo_factor, index=0)
+    
+    if Factor_pago_1 =="Real":
+        Factor_pago=(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
+    elif Factor_pago_1=="90%":
+        Factor_pago=0.9
+    else: Factor_pago =1
+    subsidio_variable_ajustado = subsidio_variable * Factor_pago
+    
+    total_ingresos_ajustado = (
+    recaudacion +
+    subsidio_fijo +
+    subsidio_variable_ajustado
+)
+    
+    tabla_ingresos = pd.DataFrame({
+    "Ingresos": [
+        "Recaudación",
+        "Subsidio Fijo",
+        "Subsidio Variable",
+        "Total Ingresos"
+    ],
+    "Monto": [
+        recaudacion,
+        subsidio_fijo,
+        subsidio_variable_ajustado,
+        total_ingresos_ajustado
+    ]
+})   
+    styled_table_ingresos = (
+    tabla_ingresos
+    .style
+    .apply(estilo_filas_ingreso, axis=1)
+    .format({
+        "Monto": lambda x: f"${x:,.0f}".replace(",", ".")
+    })
+)
+      
     st.dataframe(styled_table_ingresos, hide_index=True)
-    # Factor_pago = st.selectbox("Factor de Pago", tipo_factor, index=6)   
+    
+       
+    
+       
 
 with col13:
     subheader_custom("Costos Proyectados", size=20)
@@ -484,7 +519,7 @@ with col13:
 
 
 col14 = st.columns(1)
-metric_coloreado("Ebitda Proyectado Mes", total_ingresos-total_costos, delta=None, color_texto='white', color_fondo="#0e7ccb", formato="moneda")
+metric_coloreado("Ebitda Proyectado Mes", total_ingresos_ajustado-total_costos, delta=None, color_texto='white', color_fondo="#0e7ccb", formato="moneda")
 
 # st.dataframe(promedios_tot)
 
