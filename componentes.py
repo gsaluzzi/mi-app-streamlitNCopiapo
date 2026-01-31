@@ -467,3 +467,40 @@ def grafico_carga_3_meses(
 
     return fig
 
+
+def estilo_variacion_ingreso(val):
+    if pd.isna(val):
+        return ""
+    if val > 0:
+        return "color: green; font-weight: bold"
+    elif val < 0:
+        return "color: red; font-weight: bold"
+    else:
+        return "color: gray"
+
+
+def formato_con_flecha(val):
+    if pd.isna(val):
+        return ""
+    if val > 0:
+        return f"▲ {val:.2%}"
+    elif val < 0:
+        return f"▼ {abs(val):.2%}"
+    else:
+        return f"{val:.2%}"
+
+def estilo_variacion_costo(val):
+    if pd.isna(val):
+        return ""
+    if val < 0:
+        return "color: green; font-weight: bold"
+    elif val > 0:
+        return "color: red; font-weight: bold"
+    else:
+        return "color: gray"
+
+
+
+
+
+

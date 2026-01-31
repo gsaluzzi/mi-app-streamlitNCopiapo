@@ -3,8 +3,10 @@ import pandas as pd
 from datetime import datetime
 from utilities import get_gsheet_df
 
+
 from componentes import fetch_all_from_supabase, kpi_gauge, asignarTerminal, metric_coloreado, subheader_custom
 from componentes import barra_carga_por_tipo, dias_restantes_mes_detalle, promedio_ingresos_por_tipo_dia, grafico_carga_3_meses
+from componentes import formato_con_flecha, estilo_variacion_ingreso, estilo_variacion_costo
 
 st.set_page_config(layout="wide")
 
@@ -24,10 +26,21 @@ puntualidad = get_table_cached("puntualidad")
 transacciones = get_table_cached("transacciones")
 energia = get_table_cached("energia")
 
-SHEET_ID = "1n4Nv4IJes9cq9SqibBPWIFbqKYaRw7O1kERM2BYxHJM"
+
+#------CGE------
+SHEET_ID_CGE = "1n4Nv4IJes9cq9SqibBPWIFbqKYaRw7O1kERM2BYxHJM"
+#------Presupuesto-------
+SHEET_ID_PRE = "14wZ5eAjsynoohGqYP9H6ow38ieeShqqMJpyrfRMQxXg"
+
+
 
 costo_cge= get_gsheet_df(
-    sheet_id=SHEET_ID,
+    sheet_id=SHEET_ID_CGE,
+    worksheet_name="Hoja 1"
+)
+
+presupuesto= get_gsheet_df(
+    sheet_id=SHEET_ID_PRE,
     worksheet_name="Hoja 1"
 )
 
@@ -37,7 +50,7 @@ meses = {
     5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
     9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
 }
-
+meses_inv = {v: k for k, v in meses.items()}
 
 frecuencias = frecuencias.rename(columns={
     "fecha": "Fecha",
@@ -186,6 +199,7 @@ mes_seleccionado = st.sidebar.selectbox(
     index=index_default
 )
 
+clave_mes=meses_inv[mes_seleccionado]
 
 terminales = ["Todos"] + sorted(frecuencias["Terminal"].dropna().unique().tolist())
 terminal_seleccionada = st.sidebar.selectbox(
@@ -220,7 +234,7 @@ transacciones_filtrado = transacciones[transacciones['Mes']==mes_seleccionado]
 
 energia_filtrado = energia[energia['Mes']==mes_seleccionado]
 
-
+presupuesto_filtrado =presupuesto[presupuesto['Mes']==mes_seleccionado]
 
 #-------------------------------FRECUENCIA----------------------------------------
 if len(frecuencias_filtrado) > 0:
@@ -297,33 +311,49 @@ total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 
 
 
-tabla_ingresos = pd.DataFrame({
-    "Ingresos": [
-        "Recaudación",
-        "Subsidio Fijo",
-        "Subsidio Variable",
-        "Total Ingresos"
-    ],
-    "Monto": [
-        recaudacion,
-        subsidio_fijo,
-        subsidio_variable,
-        total_ingresos
-    ]
-})
+# tabla_ingresos = pd.DataFrame({
+#     "Ingresos": [
+#         "Recaudación",
+#         "Subsidio Fijo",
+#         "Subsidio Variable",
+#         "Total Ingresos"
+#     ],
+#     "Monto": [
+#         recaudacion,
+#         subsidio_fijo,
+#         subsidio_variable,
+#         total_ingresos
+#     ]
+# })
 
 
 personal=280000000
 costo_energia=45000000
-tecnologia=258145609/12
+tecnologia=21512134
 mantenimiento=2000000
 permisos=27000000
 terreno=144000000*1.19/12 + 6000000
 gastos=31000000
-cuotabuses=4249676702/12
-cuotacarga=2219.35*40000
+cuotabuses=354139725
+cuotacarga=91503268
 credkupos=15289752
 total_costos=personal+costo_energia+tecnologia+mantenimiento+permisos+terreno+gastos+cuotabuses+cuotacarga+credkupos
+
+
+
+personal_pre=presupuesto_filtrado["Costo Personal"][clave_mes-1]
+energia_pre=presupuesto_filtrado["Energía"][clave_mes-1]
+tecno_pre=presupuesto_filtrado["Tecnología"][clave_mes-1]
+mante_pre =presupuesto_filtrado["Mantenimiento"][clave_mes-1]
+segur_pre=presupuesto_filtrado["Permisos y Seguros"][clave_mes-1]
+terre_pre=presupuesto_filtrado["Costo Terreno"][clave_mes-1]
+gastos_pre=presupuesto_filtrado["Gastos Administración"][clave_mes-1]
+cuotabu_pre=presupuesto_filtrado["Cuota Flota Buses"][clave_mes-1]
+cuotacc_pre=presupuesto_filtrado["Cuota CCarga"][clave_mes-1]
+credku_pre=presupuesto_filtrado["Credito Kupos"][clave_mes-1]
+total_costos_pre = personal_pre+energia_pre+tecno_pre+mante_pre+segur_pre+terre_pre+gastos_pre+cuotabu_pre+cuotacc_pre+credku_pre
+
+
 
 
 
@@ -341,7 +371,7 @@ tabla_costos = pd.DataFrame({
         "Credito Kupos",
         "Total Costos"
     ],
-    "Monto": [
+    "Monto Proyectado": [
         personal,
         costo_energia,
         tecnologia,
@@ -353,6 +383,32 @@ tabla_costos = pd.DataFrame({
         cuotacarga,
         credkupos,
         total_costos
+    ],
+    "Monto Presupuesto": [
+        personal_pre,
+        energia_pre,
+        tecno_pre,
+        mante_pre,
+        segur_pre,
+        terre_pre,
+        gastos_pre,
+        cuotabu_pre,
+        cuotacc_pre,
+        credku_pre,
+        total_costos_pre
+    ],
+    "Gap": [
+        personal/personal_pre - 1,
+        costo_energia/energia_pre -1,
+        tecnologia/tecno_pre-1,
+        mantenimiento/mante_pre-1,
+        permisos/segur_pre-1,
+        terreno/terre_pre-1,
+        gastos/gastos_pre-1,
+        cuotabuses/cuotabu_pre-1,
+        cuotacarga/cuotacc_pre-1,
+        credkupos/credku_pre-1,
+        total_costos/total_costos_pre-1
     ]
 })
 
@@ -378,8 +434,11 @@ styled_table_costos = (
     tabla_costos
     .style
     .apply(estilo_filas_costo, axis=1)
+    .map(estilo_variacion_costo, subset=["Gap"])
     .format({
-        "Monto": lambda x: f"${x:,.0f}".replace(",", ".")
+        "Monto Proyectado": lambda x: f"${x:,.0f}".replace(",", "."),
+        "Monto Presupuesto": lambda x: f"${x:,.0f}".replace(",", "."),
+        "Gap": formato_con_flecha
     })
 )
 
@@ -399,28 +458,28 @@ with col1:
 
     st.plotly_chart(
     kpi_gauge("Frecuencia", list(promedios_tot.values())[0]),
-    use_container_width=True
+    width='stretch'
     )
 
 with col2:
 
     st.plotly_chart(
     kpi_gauge("Regularidad", porcentaje_regularidad),
-    use_container_width=True
+    width='stretch'
     )
 
 with col3:
 
     st.plotly_chart(
     kpi_gauge("Puntualidad", porcentaje_puntualidad),
-    use_container_width=True
+    width='stretch'
     )
 
 with col4:
 
     st.plotly_chart(
     kpi_gauge("ICF", list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1),
-    use_container_width=True
+    width='stretch'
     )
 
 st.markdown("---")
@@ -452,11 +511,11 @@ with col9:
 
 with col10:
     subheader_custom("", size=16)
-    st.plotly_chart(barra_carga_por_tipo(energia_filtrado), use_container_width=True)
+    st.plotly_chart(barra_carga_por_tipo(energia_filtrado), width='stretch')
 
 with col11:
     subheader_custom("Últimos 3 meses", size=16)
-    st.plotly_chart(grafico_carga_3_meses(energia, costo_cge), use_container_width=True)
+    st.plotly_chart(grafico_carga_3_meses(energia, costo_cge), width='stretch')
 
 
 
@@ -491,21 +550,38 @@ with col12:
         "Subsidio Variable",
         "Total Ingresos"
     ],
-    "Monto": [
+    "Monto Proyectado": [
         recaudacion,
         subsidio_fijo,
         subsidio_variable_ajustado,
         total_ingresos_ajustado
+    ],
+    "Monto Presupuesto": [
+        presupuesto_filtrado["Recaudación"][clave_mes-1],
+        presupuesto_filtrado["Subsidio Fijo"][clave_mes-1],
+        presupuesto_filtrado["Subsidio Variable"][clave_mes-1],
+        presupuesto_filtrado["Recaudación"][clave_mes-1]+presupuesto_filtrado["Subsidio Fijo"][clave_mes-1]+presupuesto_filtrado["Subsidio Variable"][clave_mes-1]
+    ],
+    "Gap": [
+        recaudacion/presupuesto_filtrado["Recaudación"][clave_mes-1] - 1,
+        subsidio_fijo/presupuesto_filtrado["Subsidio Fijo"][clave_mes-1] -1,
+        subsidio_variable_ajustado/presupuesto_filtrado["Subsidio Variable"][clave_mes-1] -1,
+        total_ingresos_ajustado/(presupuesto_filtrado["Recaudación"][clave_mes-1]+presupuesto_filtrado["Subsidio Fijo"][clave_mes-1]+presupuesto_filtrado["Subsidio Variable"][clave_mes-1]) -1
     ]
+    
 })   
     styled_table_ingresos = (
     tabla_ingresos
     .style
     .apply(estilo_filas_ingreso, axis=1)
+    .map(estilo_variacion_ingreso, subset=["Gap"])
     .format({
-        "Monto": lambda x: f"${x:,.0f}".replace(",", ".")
+        "Monto Proyectado": lambda x: f"${x:,.0f}".replace(",", "."),
+        "Monto Presupuesto": lambda x: f"${x:,.0f}".replace(",", "."),
+        "Gap": formato_con_flecha
     })
 )
+
       
     st.dataframe(styled_table_ingresos, hide_index=True)
     

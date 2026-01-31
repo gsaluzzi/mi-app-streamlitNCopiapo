@@ -1,34 +1,8 @@
 
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-from componentes import fetch_all_from_supabase
 
-
-st.set_page_config(
-    page_title="Pagos Bancarios",
-    layout="wide"
-)
-
-# ---------------------------
-# Cargar datos
-# ---------------------------
-# df = pd.read_excel("data/Remuneraciones.xlsx")
-
-@st.cache_data(ttl=3600)
-def get_table_cached(table_name):
-    return fetch_all_from_supabase(table_name)
-
-df = get_table_cached("PagosScotiabank")
-
-
-def limpiar_a_numero(serie):
-    return (
-        serie.astype(str)
-             .str.replace(".", "", regex=False)  # quita miles
-             .str.replace(",", ".", regex=False) # por si hay decimales
-             .pipe(pd.to_numeric, errors="coerce")
-    )
+from utilities import get_gsheet_df
 
 meses = {
     1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
@@ -36,73 +10,56 @@ meses = {
     9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
 }
 
+SHEET_ID_SCO = "1N7glUY1cv2bO-H0MZeGtxL0VlNd7f47YohXQOH3TjCY"
+SHEET_ID_PRE = "14wZ5eAjsynoohGqYP9H6ow38ieeShqqMJpyrfRMQxXg"
 
-df["Fecha"] = pd.to_datetime(df["Fecha"], dayfirst=True)
-df["Mes"] = df["Fecha"].dt.month.map(meses)
-
-
-cols_numericas = ["Cargo","Abono", "Saldo Diario"]
-
-for col in cols_numericas:
-    df[col] = limpiar_a_numero(df[col])
-
-df["Tipo"]= (df["Abono"] > 0).astype(int)
+df_pre= get_gsheet_df(
+    sheet_id=SHEET_ID_PRE,
+    worksheet_name="Hoja 1"
+)
 
 
+df_Scot= get_gsheet_df(
+    sheet_id=SHEET_ID_SCO,
+    worksheet_name="Hoja 1"
+)
+
+df_Scot["Fecha"] = pd.to_datetime(df_Scot["Fecha"], dayfirst=True)
+df_Scot["Mes"] = df_Scot["Fecha"].dt.month.map(meses)
 
 
+columnas_numericas = [
+    "Cargo",
+    "Abono",
+    "Saldo Diario"
+]
 
-meses_es = {
-    "january": "Enero",
-    "february": "Febrero",
-    "march": "Marzo",
-    "april": "Abril",
-    "may": "Mayo",
-    "june": "Junio",
-    "july": "Julio",
-    "august": "Agosto",
-    "september": "Septiembre",
-    "october": "Octubre",
-    "november": "Noviembre",
-    "december": "Diciembre"
-}
+for col in columnas_numericas:
+    df_Scot[col] = (
+        df_Scot[col]
+        .astype(str)
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+    )
+    df_Scot[col] = pd.to_numeric(df_Scot[col], errors="coerce")
+df_Scot = df_Scot.fillna(0)
+df_Scot["Tipo"]= (df_Scot["Abono"] == 0).astype(int)  #----- 1 es Cargo 0 es Abono------
 
-mes_actual = meses_es[datetime.now().strftime("%B").lower()]
-
-
-
-
-
-
-meses_act = list(df["Mes"].unique())
-
-if mes_actual in meses_act:
-    index_default = meses_act.index(mes_actual)
-else:
-    index_default = 0  # fallback por si no existe
-
-
-
-st.title("Pagos Bancarios")
-cola1, cola2, cola3 = st.columns(3)
-with cola1:
-    mes_seleccionado = st.selectbox("Elige Mes", meses_act, index=index_default)
-
-df_mes_seleccionado=df[df['Mes']==mes_seleccionado]
-
-
-df_mes_seleccionado_cargos=df[df['Tipo']==0]
-tabla=pd.pivot_table(df_mes_seleccionado_cargos, 
+df_Scot_Cargo = df_Scot[df_Scot['Tipo']==1]
+df_Scot_Cargo_Enero = df_Scot_Cargo[df_Scot_Cargo['Mes']=="Enero"]
+tabla=pd.pivot_table(df_Scot_Cargo_Enero, 
                      values=["Cargo"],
-                     index="Glosa",
+                     index="Glosa 2",
+                    #  columns="Semana",
                      aggfunc="sum")
 
 
 
+df_pre2 = df_pre[df_pre['Mes']=='Diciembre']
 
 
 
-
+st.dataframe(df_pre2)
 st.dataframe(tabla, use_container_width=False)
 
 
