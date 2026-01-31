@@ -4,9 +4,21 @@ from datetime import datetime
 from utilities import get_gsheet_df
 
 
-from componentes import fetch_all_from_supabase, kpi_gauge, asignarTerminal, metric_coloreado, subheader_custom
-from componentes import barra_carga_por_tipo, dias_restantes_mes_detalle, promedio_ingresos_por_tipo_dia, grafico_carga_3_meses
-from componentes import formato_con_flecha, estilo_variacion_ingreso, estilo_variacion_costo
+from componentes import (
+    fetch_all_from_supabase,
+    kpi_gauge,
+    asignarTerminal,
+    metric_coloreado,
+    subheader_custom,
+    barra_carga_por_tipo,
+    dias_restantes_mes_detalle,
+    promedio_ingresos_por_tipo_dia,
+    grafico_carga_3_meses,
+    estilo_variacion_ingreso,
+    formato_con_flecha,
+    estilo_variacion_costo
+)
+
 
 st.set_page_config(layout="wide")
 
