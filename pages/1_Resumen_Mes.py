@@ -13,10 +13,7 @@ from componentes import (
     barra_carga_por_tipo,
     dias_restantes_mes_detalle,
     promedio_ingresos_por_tipo_dia,
-    grafico_carga_3_meses,
-    estilo_variacion_ingreso,
-    formato_con_flecha,
-    estilo_variacion_costo
+    grafico_carga_3_meses
 )
 
 
@@ -43,6 +40,40 @@ energia = get_table_cached("energia")
 SHEET_ID_CGE = "1n4Nv4IJes9cq9SqibBPWIFbqKYaRw7O1kERM2BYxHJM"
 #------Presupuesto-------
 SHEET_ID_PRE = "14wZ5eAjsynoohGqYP9H6ow38ieeShqqMJpyrfRMQxXg"
+
+
+def estilo_variacion_ingreso(val):
+    if pd.isna(val):
+        return ""
+    if val > 0:
+        return "color: green; font-weight: bold"
+    elif val < 0:
+        return "color: red; font-weight: bold"
+    else:
+        return "color: gray"
+
+
+def formato_con_flecha(val):
+    if pd.isna(val):
+        return ""
+    if val > 0:
+        return f"▲ {val:.2%}"
+    elif val < 0:
+        return f"▼ {abs(val):.2%}"
+    else:
+        return f"{val:.2%}"
+
+
+def estilo_variacion_costo(val):
+    if pd.isna(val):
+        return ""
+    if val < 0:
+        return "color: green; font-weight: bold"
+    elif val > 0:
+        return "color: red; font-weight: bold"
+    else:
+        return "color: gray"
+
 
 
 
