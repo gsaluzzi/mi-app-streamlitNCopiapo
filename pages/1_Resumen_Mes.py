@@ -343,6 +343,11 @@ comision_kupos = tabla_txn["Comisión"].sum()
 habiles, sabados, domingos = dias_restantes_mes_detalle(transacciones_filtrado)
 prom_habiles, prom_sabados, prom_domingos =promedio_ingresos_por_tipo_dia(tabla_txn, "Fecha", "Recaudación")
 
+if pd.isna(prom_sabados):
+    prom_sabados=3000000
+if pd.isna(prom_domingos):
+    prom_domingos=2500000
+
 factor_faltante = habiles*prom_habiles+sabados*prom_sabados+domingos*prom_domingos
 # Factor_pago=(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
 

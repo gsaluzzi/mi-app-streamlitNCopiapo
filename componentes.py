@@ -237,7 +237,7 @@ def barra_carga_por_tipo(df):
 
     total = len(df)
     pct_dia = round((df["tipo_carga"] == 1).sum() / total * 100, 1)
-    pct_noche = 100 - pct_dia
+    pct_noche = round((100 - pct_dia),1)
 
     fig = go.Figure()
 

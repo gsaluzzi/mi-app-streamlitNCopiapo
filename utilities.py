@@ -31,3 +31,5 @@ def get_gsheet_df(sheet_id: str, worksheet_name: str) -> pd.DataFrame:
         st.error(f"❌ Error leyendo Google Sheet: {e}")
         return pd.DataFrame()
 
+
+

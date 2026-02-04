@@ -46,22 +46,24 @@ df_Scot = df_Scot.fillna(0)
 df_Scot["Tipo"]= (df_Scot["Abono"] == 0).astype(int)  #----- 1 es Cargo 0 es Abono------
 
 df_Scot_Cargo = df_Scot[df_Scot['Tipo']==1]
-df_Scot_Cargo_Enero = df_Scot_Cargo[df_Scot_Cargo['Mes']=="Enero"]
-tabla=pd.pivot_table(df_Scot_Cargo_Enero, 
+# df_Scot_Cargo_Enero = df_Scot_Cargo[df_Scot_Cargo['Mes']=="Enero"]
+tabla=pd.pivot_table(df_Scot_Cargo, 
                      values=["Cargo"],
                      index="Glosa 2",
-                    #  columns="Semana",
+                     columns="Mes Ejercicio",
                      aggfunc="sum")
 
 
+tabla2=pd.pivot_table(df_Scot_Cargo, 
+                     values=["Cargo"],
+                     index="CCosto",
+                     columns="Mes Ejercicio",
+                     aggfunc="sum")
 
-df_pre2 = df_pre[df_pre['Mes']=='Diciembre']
+tabla2 = tabla2.fillna(0)
 
-
-
-st.dataframe(df_pre2)
 st.dataframe(tabla, use_container_width=False)
-
+st.dataframe(tabla2, use_container_width=False)
 
 # st.dataframe(df)
 # print(df.dtypes)
