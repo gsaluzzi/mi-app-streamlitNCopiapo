@@ -40,7 +40,8 @@ energia = get_table_cached("energia")
 SHEET_ID_CGE = "1n4Nv4IJes9cq9SqibBPWIFbqKYaRw7O1kERM2BYxHJM"
 #------Presupuesto-------
 SHEET_ID_PRE = "14wZ5eAjsynoohGqYP9H6ow38ieeShqqMJpyrfRMQxXg"
-
+#------PAGOS-------
+SHEET_ID_PAG = "1N7glUY1cv2bO-H0MZeGtxL0VlNd7f47YohXQOH3TjCY"
 
 def estilo_variacion_ingreso(val):
     if pd.isna(val):
@@ -84,6 +85,11 @@ costo_cge= get_gsheet_df(
 
 presupuesto= get_gsheet_df(
     sheet_id=SHEET_ID_PRE,
+    worksheet_name="Hoja 1"
+)
+
+pagos_sco= get_gsheet_df(
+    sheet_id=SHEET_ID_PAG,
     worksheet_name="Hoja 1"
 )
 
@@ -193,8 +199,8 @@ energia["tipo_carga"] = (
       .astype(int)
 )
 
-
-
+pagos_sco["Monto"] = pagos_sco["Cargo"]*-1
+pagos_sco = pagos_sco.fillna(0)
 # energia["Fecha"] = pd.to_datetime(energia["Fecha"], dayfirst=True, errors="coerce")
 
 
@@ -279,6 +285,10 @@ energia_filtrado = energia[energia['Mes']==mes_seleccionado]
 
 presupuesto_filtrado =presupuesto[presupuesto['Mes']==mes_seleccionado]
 
+pagos_sco_filtrado = pagos_sco[pagos_sco['Mes Ejercicio']==mes_seleccionado]
+
+
+
 #-------------------------------FRECUENCIA----------------------------------------
 if len(frecuencias_filtrado) > 0:
     porcentaje_frecuencias = frecuencias_filtrado["Frecuencia"].mean() * 100
@@ -324,6 +334,10 @@ tabla_txn = tabla_txn.reset_index()
 recaudacion_actual=tabla_txn["Recaudación"].sum()
 promedio_recaudacion=tabla_txn["Recaudación"].mean()
 comision_kupos = tabla_txn["Comisión"].sum()
+
+
+pagos_sco_proyectado = pagos_sco_filtrado[pagos_sco_filtrado["Glosa 2"]=="Gastos Administración"]
+
 
 #-----------------------------Energia------------------------------------------------
 
@@ -381,7 +395,7 @@ tecnologia=21512134
 mantenimiento=2000000
 permisos=27000000
 terreno=144000000*1.19/12 + 6000000
-gastos=31000000
+gastos=pagos_sco_proyectado["Monto"].sum()
 cuotabuses=354139725
 cuotacarga=91503268
 credkupos=15289752
