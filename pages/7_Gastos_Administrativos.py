@@ -42,7 +42,10 @@ def grafico_costo_vs_presupuesto(
     # -----------------------------
     # Variación % vs presupuesto
     # -----------------------------
-    resumen["variacion_pct"] = (resumen[col_monto] / presupuesto - 1) * 100
+    if presupuesto == 0:
+        resumen["variacion_pct"] = None
+    else:
+        resumen["variacion_pct"] = (resumen[col_monto] / presupuesto - 1) * 100
 
     # Colores según presupuesto
     colores = [
@@ -239,6 +242,10 @@ presupuesto_admin=20000000
 fig_admin=grafico_costo_vs_presupuesto(df_Scot_admin, presupuesto=presupuesto_admin)
 
 
+df_Scot_Nopre=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Gastos No Presupuestados"]
+presupuesto_Nopre=20000000
+fig_Nopre=grafico_costo_vs_presupuesto(df_Scot_Nopre)
+
 # df_Scot_mant = df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Mantención"]
 # presupuesto_mant=2000000
 # fig_mant=grafico_costo_vs_presupuesto(df_Scot_mant, presupuesto=presupuesto_mant)
@@ -248,6 +255,8 @@ fig_admin=grafico_costo_vs_presupuesto(df_Scot_admin, presupuesto=presupuesto_ad
 meses2 = sorted(df_Scot_admin["Mes Ejercicio"].unique())
 opciones = ["TODOS"] + meses2
 
+meses2N = sorted(df_Scot_Nopre["Mes Ejercicio"].unique())
+opciones2 = ["TODOS"] + meses2N
 
 # figpie_admin = px.pie(
 #     df_Scot_admin,
@@ -283,7 +292,7 @@ with col2:
     subheader_custom("Desglose Gastos", size=20)
     mes_sel = st.selectbox("Selecciona mes", opciones)
     if mes_sel == "TODOS":
-        df_filtrado = df_Scot_admin.copy()
+        df_filtrado= df_Scot_admin.copy()
     else:
         df_filtrado = df_Scot_admin[df_Scot_admin["Mes Ejercicio"] == mes_sel]
    
@@ -305,6 +314,37 @@ with col2:
 
 
 st.markdown("---")
+
+col3, col4= st.columns(2)
+
+with col3:
+    subheader_custom("Gastos No Presupuestados", size=20)
+    st.plotly_chart(fig_Nopre, use_container_width=True)
+
+
+with col4:
+    subheader_custom("Desglose Gastos No Presupuestados", size=20)
+    mes_sel2 = st.selectbox("Selecciona Periodo", opciones2)
+    if mes_sel2 == "TODOS":
+        df_filtrado_Nopre = df_Scot_Nopre.copy()
+    else:
+        df_filtrado_Nopre = df_Scot_Nopre[df_Scot_Nopre["Mes Ejercicio"] == mes_sel2]
+   
+    tabla_Nopre = tabla_glosas_resumen(
+    df=df_filtrado_Nopre,
+    col_glosa="Glosa",
+    col_monto="Monto"
+)
+    st.dataframe(
+        tabla_Nopre.style
+            .apply(resaltar_total, axis=1)
+            .format({
+                "Monto": formato_moneda_cl,
+                "% Participación": "{:.1%}"
+            }),
+        hide_index=True
+)
+
 
 # col3, col4= st.columns(2)
 

@@ -126,7 +126,8 @@ fig_copec = grafico_monto_por_mes_estado(df_COPEC)
 df_sbs=df[df['PROVEEDOR']=='SBS']
 fig_sbs = grafico_monto_por_mes_estado(df_sbs)
 
-
+df_seguros = df[df['PROVEEDOR']=='Seguros G Suramericana']
+fig_seguros = grafico_monto_por_mes_estado(df_seguros)
 
 st.title("📊 Visor de Pagos")
 st.markdown("---")
@@ -154,5 +155,10 @@ with col4:
     st.plotly_chart(fig_sbs, use_container_width=True)
 
 
+st.markdown("---")
 
+col5, col6= st.columns(2)
 
+with col5:
+    subheader_custom("Pagos Seguros Generales", size=20)
+    st.plotly_chart(fig_seguros, use_container_width=True)
