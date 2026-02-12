@@ -120,6 +120,18 @@ fig.update_traces(
     line=dict(width=3)    
 )
 
+meta=90
+color_linea="#2C3E50"
+fig.add_hline(
+        y=meta,
+        line_dash="dash",
+        line_color=color_linea,
+        annotation_text="Meta",
+        annotation_position="top left"
+    )
+
+
+
 fig.update_layout(title="% Frecuencia por semana", template='ygridoff')
 fig.update_yaxes(range=[0, 100])
 

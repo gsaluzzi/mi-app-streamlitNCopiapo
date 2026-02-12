@@ -110,6 +110,18 @@ fig_evo.add_trace(
         name="Mi Serie"
     )
 )
+
+meta=0.6
+color_linea="#2C3E50"
+fig_evo.add_hline(
+        y=meta,
+        line_dash="dash",
+        line_color=color_linea,
+        annotation_text="Meta",
+        annotation_position="top left"
+    )
+
+
 fig_evo.update_layout(title="Puntualidad por semana", template='ygridoff')
 fig_evo.update_yaxes(range=[0, 0.6])
 fig_evo.update_yaxes(tickformat=".0%")

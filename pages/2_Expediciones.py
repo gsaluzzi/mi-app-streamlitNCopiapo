@@ -114,6 +114,18 @@ fig_evo.add_trace(
         name="Mi Serie"
     )
 )
+meta=0.95
+color_linea="#2C3E50"
+fig_evo.add_hline(
+        y=meta,
+        line_dash="dash",
+        line_color=color_linea,
+        annotation_text="Meta",
+        annotation_position="top left"
+    )
+
+
+
 fig_evo.update_layout(title="% Expediciones válidas por semana", template='ygridoff')
 fig_evo.update_yaxes(range=[0.7,1])
 fig_evo.update_yaxes(tickformat=".0%")

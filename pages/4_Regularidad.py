@@ -129,6 +129,17 @@ fig_evo.add_trace(
         name="Mi Serie"
     )
 )
+meta=0.8
+color_linea="#2C3E50"
+fig_evo.add_hline(
+        y=meta,
+        line_dash="dash",
+        line_color=color_linea,
+        annotation_text="Meta",
+        annotation_position="top left"
+    )
+
+
 fig_evo.update_layout(title="Regularidad por semana", template='ygridoff')
 fig_evo.update_yaxes(range=[0, 1])
 fig_evo.update_yaxes(tickformat=".0%")

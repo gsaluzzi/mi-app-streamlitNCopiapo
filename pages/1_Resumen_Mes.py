@@ -203,8 +203,30 @@ pagos_sco["Monto"] = pagos_sco["Cargo"]*-1
 pagos_sco = pagos_sco.fillna(0)
 # energia["Fecha"] = pd.to_datetime(energia["Fecha"], dayfirst=True, errors="coerce")
 
+columnas_numericas = [
+    "Cargo",
+    "Abono",
+    "Saldo Diario"
+]
+
+for col in columnas_numericas:
+    pagos_sco[col] = (
+        pagos_sco[col]
+        .astype(str)
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+    )
+    pagos_sco[col] = pd.to_numeric(pagos_sco[col], errors="coerce")
+
+pagos_sco["Tipo"]= (pagos_sco["Abono"] == 0).astype(int)  #----- 1 es Cargo 0 es Abono------
 
 
+df_Scot_Cargo = pagos_sco[pagos_sco['Tipo']==0]
+df_Scot_Cargo_1 = df_Scot_Cargo[~df_Scot_Cargo["Mes Ejercicio"].isin(["Octubre"])]
+df_Scot_Nopre=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Gastos No Presupuestados"]
+
+df_Scot_safu=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Costo Terreno"]
+df_Scot_rrhh=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Costo Personal"]
 
 
 # ---------------------------
@@ -287,7 +309,11 @@ presupuesto_filtrado =presupuesto[presupuesto['Mes']==mes_seleccionado]
 
 pagos_sco_filtrado = pagos_sco[pagos_sco['Mes Ejercicio']==mes_seleccionado]
 
+gastos_NP_filtrado=df_Scot_Nopre[df_Scot_Nopre['Mes Ejercicio']==mes_seleccionado]
 
+df_Scot_safu_filtrado=df_Scot_safu[df_Scot_safu['Mes Ejercicio']==mes_seleccionado]
+
+df_Scot_rrhh_filtrado=df_Scot_rrhh[df_Scot_rrhh['Mes Ejercicio']==mes_seleccionado]
 
 #-------------------------------FRECUENCIA----------------------------------------
 if len(frecuencias_filtrado) > 0:
@@ -388,17 +414,28 @@ total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 #     ]
 # })
 
+if df_Scot_rrhh_filtrado["Monto"].sum()<100000000:
+    personal=300000000
+else:
+    personal=df_Scot_rrhh_filtrado["Monto"].sum() *1.15
 
-personal=280000000
+
 costo_energia=45000000
 tecnologia=21512134
-mantenimiento=2000000
+mantenimiento=0
 permisos=22500000
-terreno=144000000*1.19/12 + 6000000
+# terreno=144000000*1.19/12 + 6000000
+# terreno=df_Scot_safu_filtrado["Monto"].sum()
+if df_Scot_safu_filtrado["Monto"].sum()==0:
+    terreno=23210930
+else:
+    terreno=df_Scot_safu_filtrado["Monto"].sum()
+
 gastos=pagos_sco_proyectado["Monto"].sum()
 cuotabuses=354139725
 cuotacarga=91503268
 credkupos=15289752
+gastos_NP=gastos_NP_filtrado["Monto"].sum()
 total_costos=personal+costo_energia+tecnologia+mantenimiento+permisos+terreno+gastos+cuotabuses+cuotacarga+credkupos
 
 
@@ -413,6 +450,7 @@ gastos_pre=presupuesto_filtrado["Gastos Administración"][clave_mes-1]
 cuotabu_pre=presupuesto_filtrado["Cuota Flota Buses"][clave_mes-1]
 cuotacc_pre=presupuesto_filtrado["Cuota CCarga"][clave_mes-1]
 credku_pre=presupuesto_filtrado["Credito Kupos"][clave_mes-1]
+gastos_NP_pre=0
 total_costos_pre = personal_pre+energia_pre+tecno_pre+mante_pre+segur_pre+terre_pre+gastos_pre+cuotabu_pre+cuotacc_pre+credku_pre
 
 
@@ -431,6 +469,7 @@ tabla_costos = pd.DataFrame({
         "Cuota Flota Buses",
         "Cuota Infraestructura Carga",
         "Credito Kupos",
+        "Gastos No Presupuestados",
         "Total Costos"
     ],
     "Monto Proyectado": [
@@ -444,6 +483,7 @@ tabla_costos = pd.DataFrame({
         cuotabuses,
         cuotacarga,
         credkupos,
+        gastos_NP,
         total_costos
     ],
     "Monto Presupuesto": [
@@ -457,6 +497,7 @@ tabla_costos = pd.DataFrame({
         cuotabu_pre,
         cuotacc_pre,
         credku_pre,
+        gastos_NP_pre,
         total_costos_pre
     ],
     "Gap": [
@@ -470,6 +511,7 @@ tabla_costos = pd.DataFrame({
         cuotabuses/cuotabu_pre-1,
         cuotacarga/cuotacc_pre-1,
         credkupos/credku_pre-1,
+        0,
         total_costos/total_costos_pre-1
     ]
 })
@@ -540,7 +582,7 @@ with col3:
 with col4:
 
     st.plotly_chart(
-    kpi_gauge("ICF", list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1),
+    kpi_gauge("Factor de Pago", list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1),
     width='stretch'
     )
 
@@ -653,7 +695,7 @@ with col12:
 
 with col13:
     subheader_custom("Costos Proyectados", size=20)
-    st.dataframe(styled_table_costos, hide_index=True, height=430)
+    st.dataframe(styled_table_costos, hide_index=True, height=460)
 
 
 col14 = st.columns(1)
