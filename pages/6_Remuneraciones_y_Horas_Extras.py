@@ -5,7 +5,9 @@ import plotly.graph_objects as go
 import pandas as pd
 from utilities import get_gsheet_df
 from componentes import estilo_negrita, metric_coloreado, subheader_custom
+from auth.permissions import require_auth
 
+require_auth(["admin"])
 
 
 

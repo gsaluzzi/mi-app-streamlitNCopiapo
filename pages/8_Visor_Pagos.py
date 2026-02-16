@@ -4,6 +4,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from componentes import subheader_custom
 from utilities import get_gsheet_df
+from auth.permissions import require_auth
+
+
+require_auth(["admin"])
 
 
 def grafico_monto_por_mes_estado(

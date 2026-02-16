@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from utilities import get_gsheet_df
-
+from auth.permissions import require_auth
 
 from componentes import (
     fetch_all_from_supabase,
@@ -15,6 +15,12 @@ from componentes import (
     promedio_ingresos_por_tipo_dia,
     grafico_carga_3_meses
 )
+
+require_auth(["admin"])
+
+# st.title("Panel de Administración")
+# st.write("Solo admins pueden ver esto")
+
 
 
 st.set_page_config(layout="wide")
@@ -417,8 +423,7 @@ total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 if df_Scot_rrhh_filtrado["Monto"].sum()<100000000:
     personal=300000000
 else:
-    personal=df_Scot_rrhh_filtrado["Monto"].sum() *1.15
-
+    personal=df_Scot_rrhh_filtrado["Monto"].sum()
 
 costo_energia=45000000
 tecnologia=21512134

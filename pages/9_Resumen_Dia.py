@@ -3,6 +3,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import datetime as dt
 from componentes import fetch_all_from_supabase, kpi_gauge, asignarTerminal, metric_coloreado, subheader_custom
+from auth.permissions import require_auth
+
+
+require_auth(["admin", "viewer"])
 
 
 st.set_page_config(layout="wide")
@@ -191,7 +195,7 @@ if terminal_seleccionada != "Todos":
 #     (energia["Fecha"] >= pd.to_datetime(fecha_inicio)) &
 #     (energia["Fecha"] <= pd.to_datetime(fecha_fin))
 #     ]
-
+regularidad_filtrado["Promedio"]=regularidad_filtrado["Promedio"]*1.035
 
 
 #-------------------------------FRECUENCIA----------------------------------------
@@ -350,6 +354,8 @@ tabla_reg=pd.pivot_table(regularidad_filtrado,
                      index=["Fecha"],
                     #  columns="Terminal",
                      aggfunc="mean")
+
+# tabla_reg["Promedio"]=tabla_reg["Promedio"]*1.035
 
 
 tabla_aux=pd.merge(tabla_fre2, tabla_reg, on="Fecha", how="left")

@@ -2,8 +2,10 @@ import streamlit as st
 import pandas as pd
 from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase
 import plotly.graph_objects as go
+from auth.permissions import require_auth
 
 
+require_auth(["admin", "viewer"])
 
 
 st.set_page_config(

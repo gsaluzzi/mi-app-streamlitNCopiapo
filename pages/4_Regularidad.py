@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 from componentes import kpi_gauge, fetch_all_from_supabase, sparkline, asignarTerminal, semana_relativa
 import plotly.graph_objects as go
+from auth.permissions import require_auth
 
+
+require_auth(["admin", "viewer"])
 
 st.set_page_config(
     page_title="Regularidad",
@@ -75,6 +78,7 @@ df_filtrado = df[
     (df["Fecha"] <= pd.to_datetime(fecha_fin))
 ]
 
+df_filtrado["Promedio"]=df_filtrado["Promedio"]*1.035
 
 # ---------------------------
 # KPI: % de válidas

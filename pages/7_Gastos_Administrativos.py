@@ -6,7 +6,9 @@ import plotly.express as px
 
 from utilities import get_gsheet_df
 from componentes import subheader_custom
+from auth.permissions import require_auth
 
+require_auth(["admin"])
 
 
 def grafico_costo_vs_presupuesto(
