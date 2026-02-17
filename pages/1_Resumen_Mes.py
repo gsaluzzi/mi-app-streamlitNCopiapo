@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import datetime
 from utilities import get_gsheet_df
 from auth.permissions import require_auth
+from auth.auth import check_session_timeout
+from ui import render_sidebar_user
+
 
 from componentes import (
     fetch_all_from_supabase,
@@ -16,7 +19,9 @@ from componentes import (
     grafico_carga_3_meses
 )
 
+check_session_timeout()
 require_auth(["admin"])
+render_sidebar_user()
 
 # st.title("Panel de Administración")
 # st.write("Solo admins pueden ver esto")
@@ -323,7 +328,10 @@ df_Scot_rrhh_filtrado=df_Scot_rrhh[df_Scot_rrhh['Mes Ejercicio']==mes_selecciona
 
 #-------------------------------FRECUENCIA----------------------------------------
 if len(frecuencias_filtrado) > 0:
-    porcentaje_frecuencias = frecuencias_filtrado["Frecuencia"].mean() * 100
+    if mes_seleccionado=="Enero":
+        porcentaje_frecuencias=(0.87*(16/31)+1*(15/31))*100
+    else:
+        porcentaje_frecuencias = frecuencias_filtrado["Frecuencia"].mean() * 100
 else:
     porcentaje_frecuencias = 0
 
@@ -341,17 +349,31 @@ tabla_evo_tot= tabla_evo_tot.drop("Demanda", axis=1)
 
 promedios_tot = tabla_evo_tot.mean().round(0).to_dict()
 
+
+if mes_seleccionado=="Enero":
+    fre_final=(0.87*(16/31)+1*(15/31))*100
+else:
+    fre_final=list(promedios_tot.values())[0]   
+
+
+
 #-------------------------------REGULARIDAD----------------------------------------
 
 if len(regularidad_filtrado) > 0:
-    porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.05
+    if mes_seleccionado=="Enero":
+        porcentaje_regularidad=(0.79*(16/31)+1*(15/31))*100
+    else:
+        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.05
 else:
     porcentaje_regularidad = 0
 
 #-------------------------------PUNTUALIDAD----------------------------------------
 
 if len(puntualidad_filtrado) > 0:
-    porcentaje_puntualidad = puntualidad_filtrado["Indicador"].mean() * 100
+    if mes_seleccionado=="Enero":
+        porcentaje_puntualidad=(0.48*(16/31)+1*(15/31))*100
+    else:
+        porcentaje_puntualidad = puntualidad_filtrado["Indicador"].mean() * 100
 else:
     porcentaje_puntualidad = 0
 
@@ -566,7 +588,7 @@ col1, col2, col3, col4= st.columns(4)
 with col1:
 
     st.plotly_chart(
-    kpi_gauge("Frecuencia", list(promedios_tot.values())[0]),
+    kpi_gauge("Frecuencia", fre_final),
     width='stretch'
     )
 
@@ -587,7 +609,7 @@ with col3:
 with col4:
 
     st.plotly_chart(
-    kpi_gauge("Factor de Pago", list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1),
+    kpi_gauge("Factor de Pago", fre_final*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1),
     width='stretch'
     )
 
@@ -640,7 +662,7 @@ with col12:
     Factor_pago_1 = st.selectbox("Factor de Pago", tipo_factor, index=0)
     
     if Factor_pago_1 =="Real":
-        Factor_pago=(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
+        Factor_pago=(fre_final*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
     elif Factor_pago_1=="90%":
         Factor_pago=0.9
     else: Factor_pago =1

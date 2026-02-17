@@ -3,6 +3,13 @@ import streamlit as st
 from supabase import create_client
 from security import hash_password, check_password
 from auth.auth import logout
+from datetime import datetime
+from auth.auth import check_session_timeout
+from ui import render_sidebar_user
+
+
+check_session_timeout()
+render_sidebar_user()
 
 supabase = create_client(
     st.secrets["SUPABASE_URL"],
@@ -67,6 +74,7 @@ def autenticar_usuario(email, password):
         "nombre": user["nombre"],
         "role": user["rol"]
     }
+    st.session_state.last_activity = datetime.now()
 
     supabase.table("usuarios") \
         .update({"ultimo_login": "now()"}) \
@@ -100,14 +108,14 @@ if not st.session_state.authenticated:
 
 hide_pages_for_role()
 
-if st.session_state.authenticated:
-    with st.sidebar:
-        st.markdown("---")
-        st.write(f"👤 {st.session_state.user['nombre']}")
-        st.write(f"🔐 Rol: {st.session_state.user['role']}")
+# if st.session_state.authenticated:
+#     with st.sidebar:
+#         st.markdown("---")
+#         st.write(f"👤 {st.session_state.user['nombre']}")
+#         st.write(f"🔐 Rol: {st.session_state.user['role']}")
 
-        if st.button("🚪 Cerrar sesión"):
-            logout()
+#         if st.button("🚪 Cerrar sesión"):
+#             logout()
 
 
 

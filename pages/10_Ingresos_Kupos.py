@@ -6,9 +6,14 @@ import plotly.graph_objects as go
 from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase
 from utilities import get_gsheet_df
 from auth.permissions import require_auth
+from auth.auth import check_session_timeout
+from ui import render_sidebar_user
 
 
+check_session_timeout()
 require_auth(["admin"])
+render_sidebar_user()
+
 
 st.set_page_config(layout="wide")
 

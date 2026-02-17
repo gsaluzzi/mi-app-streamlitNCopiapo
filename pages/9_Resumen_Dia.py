@@ -4,10 +4,12 @@ import plotly.graph_objects as go
 import datetime as dt
 from componentes import fetch_all_from_supabase, kpi_gauge, asignarTerminal, metric_coloreado, subheader_custom
 from auth.permissions import require_auth
+from auth.auth import check_session_timeout
+from ui import render_sidebar_user
 
-
+check_session_timeout()
 require_auth(["admin", "viewer"])
-
+render_sidebar_user()
 
 st.set_page_config(layout="wide")
 

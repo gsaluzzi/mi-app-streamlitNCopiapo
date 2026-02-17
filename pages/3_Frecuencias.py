@@ -1,11 +1,16 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+import datetime as dt
 from componentes import kpi_gauge, asignarTerminal, semana_relativa, fetch_all_from_supabase
 from auth.permissions import require_auth
+from auth.auth import check_session_timeout
+from ui import render_sidebar_user
 
 
+check_session_timeout()
 require_auth(["admin", "viewer"])
+render_sidebar_user()
 
 st.set_page_config(
     page_title="Indicador de Frecuencia",
@@ -44,10 +49,27 @@ df["Semana"]= semana_relativa(df["Fecha"], "2025-10-13")
 # ---------------------------
 st.sidebar.header("Filtros")
 
-fecha_inicio, fecha_fin = st.sidebar.date_input(
+# fecha_inicio, fecha_fin = st.sidebar.date_input(
+#     "Rango de fechas",
+#     value=[df["Fecha"].min(), df["Fecha"].max()]
+# )
+
+fecha_max = df["Fecha"].max()
+fecha_inicio_default = fecha_max - dt.timedelta(days=14)
+
+
+rango_fechas = st.sidebar.date_input(
     "Rango de fechas",
-    value=[df["Fecha"].min(), df["Fecha"].max()]
+    value=[fecha_inicio_default, fecha_max],
+    min_value=df["Fecha"].min(),
+    max_value=df["Fecha"].max()
 )
+
+if not (isinstance(rango_fechas, (list, tuple)) and len(rango_fechas) == 2):
+    st.stop()
+
+fecha_inicio, fecha_fin = rango_fechas
+
 
 df_filtrado = df[
     (df["Fecha"] >= pd.to_datetime(fecha_inicio)) &

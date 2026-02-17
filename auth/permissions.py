@@ -16,3 +16,27 @@ def require_auth(allowed_roles: list[str]):
         st.stop()
 
 
+PAGE_ACCESS = {
+    "admin": [
+        "Resumen Mes",
+        "Expediciones",
+        "Frecuencias",
+        "Regularidad",
+        "Puntualidad",
+        "Remuneraciones y Horas Extras",
+        "Gastos Administrativos",
+        "Visor Pagos",
+        "Resumen Dia"
+        "Ingresos Kupos",
+    ],
+    "viewer": [
+        "Expediciones",
+        "Frecuencias",
+        "Regularidad",
+        "Puntualidad",     
+        "Resumen Dia",
+    ],
+}
+
+
+

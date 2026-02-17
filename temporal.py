@@ -1,11 +1,11 @@
 
 # import bcrypt
-import streamlit as st
-from supabase import create_client
-from componentes import fetch_all_from_supabase
+# import streamlit as st
+# from supabase import create_client
+# from componentes import fetch_all_from_supabase
 
 
-# password = "1234"
+# password = "123456"
 # password_hash = bcrypt.hashpw(
 #     password.encode(),
 #     bcrypt.gensalt()
@@ -13,17 +13,17 @@ from componentes import fetch_all_from_supabase
 
 # print(password_hash)
 
-supabase = create_client(
-    st.secrets["SUPABASE_URL"],
-    st.secrets["SUPABASE_KEY"]
-)
+# supabase = create_client(
+#     st.secrets["SUPABASE_URL"],
+#     st.secrets["SUPABASE_KEY"]
+# )
 
-response = supabase.table("usuarios")
+# response = supabase.table("usuarios")
 
-df=fetch_all_from_supabase("usuarios")
+# df=fetch_all_from_supabase("usuarios")
 
 
-print(df)
-print(supabase)
+# print(df)
+# print(supabase)
 
 
