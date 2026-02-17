@@ -1,6 +1,6 @@
 
 import streamlit as st
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 
 def logout():
     st.session_state.authenticated = False
@@ -13,20 +13,20 @@ def logout():
 
     st.rerun()
 
-SESSION_TIMEOUT_MINUTES = 20
+# SESSION_TIMEOUT_MINUTES = 20
 
-def check_session_timeout():
-    if not st.session_state.get("authenticated"):
-        return
+# def check_session_timeout():
+#     if not st.session_state.get("authenticated"):
+#         return
 
-    last_activity = st.session_state.get("last_activity")
+#     last_activity = st.session_state.get("last_activity")
 
-    if not last_activity:
-        return
+#     if not last_activity:
+#         return
 
-    if datetime.now() - last_activity > timedelta(minutes=SESSION_TIMEOUT_MINUTES):
-        st.warning("⏳ Tu sesión expiró por inactividad")
-        logout()
-    else:
-        # Renovar actividad
-        st.session_state.last_activity = datetime.now()
+#     if datetime.now() - last_activity > timedelta(minutes=SESSION_TIMEOUT_MINUTES):
+#         st.warning("⏳ Tu sesión expiró por inactividad")
+#         logout()
+#     else:
+#         # Renovar actividad
+#         st.session_state.last_activity = datetime.now()

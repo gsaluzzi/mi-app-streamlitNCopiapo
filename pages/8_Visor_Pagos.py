@@ -4,8 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from componentes import subheader_custom
 from utilities import get_gsheet_df
-from auth.permissions import require_auth
-from auth.auth import check_session_timeout
+from auth.permissions import require_auth, check_session_timeout
+# from auth.auth import check_session_timeout
 from ui import render_sidebar_user
 
 

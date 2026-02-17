@@ -4,7 +4,7 @@ from supabase import create_client
 from security import hash_password, check_password
 from auth.auth import logout
 from datetime import datetime
-from auth.auth import check_session_timeout
+from auth.permissions import check_session_timeout
 from ui import render_sidebar_user
 
 

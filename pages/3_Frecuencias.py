@@ -3,8 +3,8 @@ import plotly.express as px
 import pandas as pd
 import datetime as dt
 from componentes import kpi_gauge, asignarTerminal, semana_relativa, fetch_all_from_supabase
-from auth.permissions import require_auth
-from auth.auth import check_session_timeout
+from auth.permissions import require_auth, check_session_timeout
+# from auth.auth import check_session_timeout
 from ui import render_sidebar_user
 
 

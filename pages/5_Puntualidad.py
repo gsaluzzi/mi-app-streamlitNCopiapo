@@ -3,8 +3,8 @@ import pandas as pd
 from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, fetch_all_from_supabase
 import plotly.graph_objects as go
 import datetime as dt
-from auth.permissions import require_auth
-from auth.auth import check_session_timeout
+from auth.permissions import require_auth, check_session_timeout
+# from auth.auth import check_session_timeout
 from ui import render_sidebar_user
 
 
