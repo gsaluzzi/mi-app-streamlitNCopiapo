@@ -28,3 +28,4 @@ def render_sidebar_user():
 
         if st.button("🚪 Cerrar sesión"):
             logout()
+        st.markdown("---")

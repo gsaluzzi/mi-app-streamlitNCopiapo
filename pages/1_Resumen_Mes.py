@@ -238,6 +238,7 @@ df_Scot_Nopre=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Gastos No Presupuesta
 
 df_Scot_safu=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Costo Terreno"]
 df_Scot_rrhh=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Costo Personal"]
+df_Scot_mant=df_Scot_Cargo_1[df_Scot_Cargo_1['Glosa 2']=="Mantencion"]
 
 
 # ---------------------------
@@ -325,6 +326,11 @@ gastos_NP_filtrado=df_Scot_Nopre[df_Scot_Nopre['Mes Ejercicio']==mes_seleccionad
 df_Scot_safu_filtrado=df_Scot_safu[df_Scot_safu['Mes Ejercicio']==mes_seleccionado]
 
 df_Scot_rrhh_filtrado=df_Scot_rrhh[df_Scot_rrhh['Mes Ejercicio']==mes_seleccionado]
+
+df_Scot_mant_filtrado=df_Scot_mant[df_Scot_mant['Mes Ejercicio']==mes_seleccionado]
+
+
+
 
 #-------------------------------FRECUENCIA----------------------------------------
 if len(frecuencias_filtrado) > 0:
@@ -449,7 +455,7 @@ else:
 
 costo_energia=45000000
 tecnologia=21512134
-mantenimiento=0
+mantenimiento=df_Scot_mant_filtrado["Monto"].sum()
 permisos=22500000
 # terreno=144000000*1.19/12 + 6000000
 # terreno=df_Scot_safu_filtrado["Monto"].sum()
