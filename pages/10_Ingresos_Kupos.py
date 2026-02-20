@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa
 from utilities import get_gsheet_df
 from auth.permissions import require_auth, check_session_timeout
-# from auth.auth import check_session_timeout
 from ui import render_sidebar_user
 import plotly.express as px
 
@@ -24,6 +23,8 @@ def get_table_cached(table_name):
     return fetch_all_from_supabase(table_name)
 
 transacciones = get_table_cached("transacciones")
+expediciones = get_table_cached("expediciones")
+
 
 meses = {
     1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
@@ -42,6 +43,24 @@ df_param= get_gsheet_df(
     sheet_id=SHEET_ID_FAC,
     worksheet_name="Kupos"
 )
+
+expediciones = expediciones.rename(columns={
+    "fecha": "Fecha",
+    "estado": "Estado",
+    "terminal": "Terminal",
+    "servicio": "Servicio"
+})
+expediciones["Fecha"] = pd.to_datetime(expediciones["Fecha"], dayfirst=True)
+expediciones["Estado"] = expediciones["Estado"].str.lower().str.strip()
+expediciones["Terminal"] = expediciones["Servicio"].apply(asignarTerminal)
+expediciones["Semana"]= semana_relativa(expediciones["Fecha"], "2025-10-13")
+expediciones["es_valida"]= (expediciones["Estado"].str.lower() == "valida").astype(int)
+
+expediciones = expediciones[expediciones['causa']!='Cortadas por inverso']
+expediciones["Mes"] = expediciones["Fecha"].dt.month.map(meses)
+expediciones["Año"] = expediciones["Fecha"].dt.year
+expediciones["Expediciones"] = 1
+
 
 # def grafico_recaudacion_apilada_pct(
 #     df,
@@ -493,7 +512,7 @@ with col8:
 
 
 st.markdown("---")
-subheader_custom("Recaudación por Terminal y Línea", size=20)
+subheader_custom("Recaudación por Terminal", size=20)
 col9, col10= st.columns([1,1])
 with col9:
     st.plotly_chart(fig2, use_container_width=True)
@@ -502,3 +521,100 @@ with col10:
     subheader_custom("", size=40)
     st.dataframe(styler, use_container_width=True, hide_index=False)
 
+st.markdown("---")
+transacciones2=transacciones[transacciones["Servicio"]!="SIN INFORMACIÓN"]
+
+meses2 = sorted(transacciones2["Mes"].unique())
+opciones = ["TODOS"] + meses2
+
+
+
+
+
+subheader_custom("Recaudación por Línea", size=20)
+col11, col12 = st.columns([1,4])
+
+with col11:
+    mes_sel = st.selectbox("Selecciona mes", opciones)
+
+
+
+if mes_sel == "TODOS":
+    transacciones_filtrado= transacciones2.copy()
+else:
+    transacciones_filtrado = transacciones2[transacciones2["Mes"] == mes_sel]
+
+if mes_sel == "TODOS":
+    expediciones_filtrado= expediciones.copy()
+else:
+    expediciones_filtrado = expediciones[expediciones["Mes"] == mes_sel]
+
+
+tabla_lh=pd.pivot_table(transacciones_filtrado[transacciones_filtrado["Terminal"]=="Los Heroes"], 
+                     values=["Recaudación"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_lh=pd.pivot_table(expediciones_filtrado[expediciones_filtrado["Terminal"]=="Los Heroes"], 
+                     values=["Expediciones"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_final_lh=pd.merge(tabla_lh, tabla_exp_lh, on="Servicio", how="left")
+tabla_final_lh.loc["Total"] = tabla_final_lh.sum(axis=0)
+tabla_final_lh["RecXExp"]=tabla_final_lh["Recaudación"]/tabla_final_lh["Expediciones"]
+
+
+tabla_paipo=pd.pivot_table(transacciones_filtrado[transacciones_filtrado["Terminal"]=="Paipote"], 
+                     values=["Recaudación"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_paipo=pd.pivot_table(expediciones_filtrado[expediciones_filtrado["Terminal"]=="Paipote"], 
+                     values=["Expediciones"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_final_paipo=pd.merge(tabla_paipo, tabla_exp_paipo, on="Servicio", how="left")
+tabla_final_paipo.loc["Total"] = tabla_final_paipo.sum(axis=0)
+tabla_final_paipo["RecXExp"]=tabla_final_paipo["Recaudación"]/tabla_final_paipo["Expediciones"]
+
+tabla_terra=pd.pivot_table(transacciones_filtrado[transacciones_filtrado["Terminal"]=="Terrapuerto"], 
+                     values=["Recaudación"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_terra=pd.pivot_table(expediciones_filtrado[expediciones_filtrado["Terminal"]=="Terrapuerto"], 
+                     values=["Expediciones"],
+                     index="Servicio",
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_final_terra=pd.merge(tabla_terra, tabla_exp_terra, on="Servicio", how="left")
+tabla_final_terra.loc["Total"] = tabla_final_terra.sum(axis=0)
+tabla_final_terra["RecXExp"]=tabla_final_terra["Recaudación"]/tabla_final_terra["Expediciones"]
+
+col13, col14, col15 = st.columns(3)
+
+with col13:
+    subheader_custom("Paipote")
+    st.dataframe(tabla_final_paipo.style
+    .apply(resaltar_total_fila, axis=1) 
+    .format({"Recaudación" : lambda x: f"${x:,.0f}" if pd.notna(x) else "-", 
+             "Expediciones": lambda x: f"{x:,.0f}" if pd.notna(x) else "-",
+             "RecXExp": lambda x: f"${x:,.0f}" if pd.notna(x) else "-"}), use_container_width=True)
+
+with col14:
+    subheader_custom("Los Heroes")
+    st.dataframe(tabla_final_lh.style
+    .apply(resaltar_total_fila, axis=1) 
+    .format({"Recaudación" : lambda x: f"${x:,.0f}" if pd.notna(x) else "-", 
+             "Expediciones": lambda x: f"{x:,.0f}" if pd.notna(x) else "-",
+             "RecXExp": lambda x: f"${x:,.0f}" if pd.notna(x) else "-"}), use_container_width=True)
+
+with col15:
+    subheader_custom("Terrapuerto")
+    st.dataframe(tabla_final_terra.style
+    .apply(resaltar_total_fila, axis=1) 
+    .format({"Recaudación" : lambda x: f"${x:,.0f}" if pd.notna(x) else "-", 
+             "Expediciones": lambda x: f"{x:,.0f}" if pd.notna(x) else "-",
+             "RecXExp": lambda x: f"${x:,.0f}" if pd.notna(x) else "-"}), use_container_width=True)

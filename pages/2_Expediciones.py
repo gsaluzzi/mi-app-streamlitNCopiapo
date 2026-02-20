@@ -314,12 +314,309 @@ tabla_txn2["Evolutivo"] = tabla_txn2[cols_semanas].apply(sparkline, axis=1)
 for i in sems:
     tabla_txn2[i]=tabla_txn2[i].astype(str) + '%'
 
+#---------------------------------------------------------------------
+#------------------L1-------------------------------------------------
+
+tabla_L1=pd.pivot_table(df[df["Servicio"]=="L1"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L1 = tabla_L1.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L2-------------------------------------------------
+
+tabla_L2=pd.pivot_table(df[df["Servicio"]=="L2"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L2 = tabla_L2.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L3-------------------------------------------------
+
+tabla_L3=pd.pivot_table(df[df["Servicio"]=="L3"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L3 = tabla_L3.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L4-------------------------------------------------
+
+tabla_L4=pd.pivot_table(df[df["Servicio"]=="L4"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L4 = tabla_L4.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L5-------------------------------------------------
+
+tabla_L5=pd.pivot_table(df[df["Servicio"]=="L5"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L5 = tabla_L5.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L6-------------------------------------------------
+
+tabla_L6=pd.pivot_table(df[df["Servicio"]=="L6"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L6 = tabla_L6.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L7-------------------------------------------------
+
+tabla_L7=pd.pivot_table(df[df["Servicio"]=="L7"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L7 = tabla_L7.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L8-------------------------------------------------
+
+tabla_L8=pd.pivot_table(df[df["Servicio"]=="L8"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L8 = tabla_L8.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L9-------------------------------------------------
+
+tabla_L9=pd.pivot_table(df[df["Servicio"]=="L9"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L9 = tabla_L9.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L10-------------------------------------------------
+
+tabla_L10=pd.pivot_table(df[df["Servicio"]=="L10"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L10 = tabla_L10.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L11-------------------------------------------------
+
+tabla_L11=pd.pivot_table(df[df["Servicio"]=="L11"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L11 = tabla_L11.reset_index()
+
+#-----------------------------------------------------------------------
+#------------------L12-------------------------------------------------
+
+tabla_L12=pd.pivot_table(df[df["Servicio"]=="L12"], 
+                     values=["es_valida"],
+                     index="Semana",
+                    #  columns="Terminal",
+                     aggfunc="mean")
+tabla_L12 = tabla_L12.reset_index()
+
+#-----------------------------------------------------------------------
+
+
+
+
+
+fig_paipo = go.Figure()
+
+fig_paipo.add_trace(
+    go.Scatter(
+        x=tabla_L1["Semana"],
+        y=tabla_L1["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L1["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L1"
+    )
+)
+fig_paipo.add_trace(
+    go.Scatter(
+        x=tabla_L9["Semana"],
+        y=tabla_L9["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L9["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L9"
+    )
+)
+fig_paipo.add_trace(
+    go.Scatter(
+        x=tabla_L11["Semana"],
+        y=tabla_L11["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L11["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L11"
+    )
+)
+fig_paipo.add_trace(
+    go.Scatter(
+        x=tabla_L12["Semana"],
+        y=tabla_L12["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L12["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L12"
+    )
+)
+
+fig_paipo.update_layout(
+    title="Exp válidas por líneas Paipote",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_paipo.update_yaxes(range=[0.3,1.1])
+fig_paipo.update_yaxes(tickformat=".0%")
+
+#--------------------------------------------------------------------------
+fig_terra = go.Figure()
+
+fig_terra.add_trace(
+    go.Scatter(
+        x=tabla_L6["Semana"],
+        y=tabla_L6["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L6["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L6"
+    )
+)
+fig_terra.add_trace(
+    go.Scatter(
+        x=tabla_L8["Semana"],
+        y=tabla_L8["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L8["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L8"
+    )
+)
+fig_terra.add_trace(
+    go.Scatter(
+        x=tabla_L10["Semana"],
+        y=tabla_L10["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L10["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L10"
+    )
+)
+
+fig_terra.update_layout(
+    title="Exp válidas por líneas Terrapuerto",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_terra.update_yaxes(range=[0.3,1.1])
+fig_terra.update_yaxes(tickformat=".0%")
+
+#--------------------------------------------------------------------------------
+fig_lh = go.Figure()
+
+fig_lh.add_trace(
+    go.Scatter(
+        x=tabla_L2["Semana"],
+        y=tabla_L2["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L2["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L2"
+    )
+)
+fig_lh.add_trace(
+    go.Scatter(
+        x=tabla_L3["Semana"],
+        y=tabla_L3["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L3["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L3"
+    )
+)
+fig_lh.add_trace(
+    go.Scatter(
+        x=tabla_L4["Semana"],
+        y=tabla_L4["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L4["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L4"
+    )
+)
+fig_lh.add_trace(
+    go.Scatter(
+        x=tabla_L5["Semana"],
+        y=tabla_L5["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L5["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L5"
+    )
+)
+fig_lh.add_trace(
+    go.Scatter(
+        x=tabla_L7["Semana"],
+        y=tabla_L7["es_valida"],
+        mode="lines+markers+text",
+        text=tabla_L7["es_valida"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L7"
+    )
+)
+fig_lh.update_layout(
+    title="Exp válidas por líneas Los Heroes",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_lh.update_yaxes(range=[0.3,1.1])
+fig_lh.update_yaxes(tickformat=".0%")
+
+
 
 st.markdown("---")
-st.subheader("Evolución Semanal por línea")
-st.dataframe(tabla_txn2, height=480)
-
-
+st.plotly_chart(fig_paipo)
+st.markdown("---")
+st.plotly_chart(fig_terra)
+st.markdown("---")
+st.plotly_chart(fig_lh)
 
 
 
