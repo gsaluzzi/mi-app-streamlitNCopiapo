@@ -6,6 +6,7 @@ from componentes import kpi_gauge, asignarTerminal, semana_relativa, fetch_all_f
 from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
 from ui import render_sidebar_user
+import plotly.graph_objects as go
 
 
 check_session_timeout()
@@ -273,7 +274,187 @@ promedios_lh = tabla_lh.mean().round(0).to_dict()
 tabla_lh2=pd.DataFrame([promedios_lh])
 
 #--------------------------------------------------
+#---------------------L1---------------------------
+df_L1=df[df["Servicio"]=="[1248] L1"]
+tabla_L1=pd.pivot_table(df_L1, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
 
+tabla2_L1=pd.pivot_table(tabla_L1, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L1= tabla2_L1.reset_index()
+
+#---------------------L2---------------------------
+df_L2=df[df["Servicio"]=="[1249] L2"]
+tabla_L2=pd.pivot_table(df_L2, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L2=pd.pivot_table(tabla_L2, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L2= tabla2_L2.reset_index()
+
+#---------------------L3---------------------------
+df_L3=df[df["Servicio"]=="[1250] L3"]
+tabla_L3=pd.pivot_table(df_L3, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L3=pd.pivot_table(tabla_L3, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L3= tabla2_L3.reset_index()
+
+#---------------------L4---------------------------
+df_L4=df[df["Servicio"]=="[1251] L4"]
+tabla_L4=pd.pivot_table(df_L4, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L4=pd.pivot_table(tabla_L4, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L4= tabla2_L4.reset_index()
+
+#---------------------L5---------------------------
+df_L5=df[df["Servicio"]=="[1252] L5"]
+tabla_L5=pd.pivot_table(df_L5, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L5=pd.pivot_table(tabla_L5, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L5= tabla2_L5.reset_index()
+
+#---------------------L6---------------------------
+df_L6=df[df["Servicio"]=="[1253] L6"]
+tabla_L6=pd.pivot_table(df_L6, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L6=pd.pivot_table(tabla_L6, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L6= tabla2_L6.reset_index()
+
+#---------------------L7---------------------------
+df_L7=df[df["Servicio"]=="[1254] L7"]
+tabla_L7=pd.pivot_table(df_L7, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L7=pd.pivot_table(tabla_L7, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L7= tabla2_L7.reset_index()
+
+#---------------------L8---------------------------
+df_L8=df[df["Servicio"]=="[1255] L8"]
+tabla_L8=pd.pivot_table(df_L8, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L8=pd.pivot_table(tabla_L8, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L8= tabla2_L8.reset_index()
+
+#---------------------L9---------------------------
+df_L9=df[df["Servicio"]=="[1256] L9"]
+tabla_L9=pd.pivot_table(df_L9, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L9=pd.pivot_table(tabla_L9, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L9= tabla2_L9.reset_index()
+
+#---------------------L10---------------------------
+df_L10=df[df["Servicio"]=="[1257] L10"]
+tabla_L10=pd.pivot_table(df_L10, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L10=pd.pivot_table(tabla_L10, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L10= tabla2_L10.reset_index()
+
+#---------------------L11---------------------------
+df_L11=df[df["Servicio"]=="[1258] L11"]
+tabla_L11=pd.pivot_table(df_L11, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L11=pd.pivot_table(tabla_L11, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L11= tabla2_L11.reset_index()
+
+#---------------------L12---------------------------
+df_L12=df[df["Servicio"]=="[1259] L12"]
+tabla_L12=pd.pivot_table(df_L12, 
+                     values=["Frecuencia"],
+                     index=["Semana","Demanda"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+
+tabla2_L12=pd.pivot_table(tabla_L12, 
+                     values=["Frecuencia"],
+                     index=["Semana"],
+                    #  columns="Semana",
+                     aggfunc="mean")
+tabla2_L12= tabla2_L12.reset_index()
+
+#------------------------------------------------------
 df_frecTerm= pd.DataFrame({
     "Paipote": promedios_paipo,
     "Terrapuerto": promedios_terra,
@@ -302,6 +483,192 @@ fig_frecTerm.update_traces(
 
 fig_frecTerm.update_layout(title="% Frecuencia por terminal", template='ygridoff')
 fig_frecTerm.update_yaxes(range=[0, 100])
+
+#-------------------------------grafico por línea paipote---------------------------
+fig_linea_paipo=go.Figure()
+
+fig_linea_paipo.add_trace(
+    go.Scatter(
+        x=tabla2_L1["Semana"],
+        y=tabla2_L1["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L1["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L1"
+    )
+)
+
+fig_linea_paipo.add_trace(
+    go.Scatter(
+        x=tabla2_L9["Semana"],
+        y=tabla2_L9["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L9["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L9"
+    )
+)
+
+fig_linea_paipo.add_trace(
+    go.Scatter(
+        x=tabla2_L11["Semana"],
+        y=tabla2_L11["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L11["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L11"
+    )
+)
+
+fig_linea_paipo.add_trace(
+    go.Scatter(
+        x=tabla2_L12["Semana"],
+        y=tabla2_L12["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L12["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L12"
+    )
+)
+
+
+fig_linea_paipo.update_layout(
+    title="Frecuencia por Líneas Paipote",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_linea_paipo.update_yaxes(range=[0,1.2])
+fig_linea_paipo.update_yaxes(tickformat=".0%")
+
+
+#-------------------------------grafico por línea Terrapuerto---------------------------
+fig_linea_terra=go.Figure()
+
+fig_linea_terra.add_trace(
+    go.Scatter(
+        x=tabla2_L6["Semana"],
+        y=tabla2_L6["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L6["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L6"
+    )
+)
+
+fig_linea_terra.add_trace(
+    go.Scatter(
+        x=tabla2_L8["Semana"],
+        y=tabla2_L8["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L8["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L8"
+    )
+)
+
+fig_linea_terra.add_trace(
+    go.Scatter(
+        x=tabla2_L10["Semana"],
+        y=tabla2_L10["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L10["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L10"
+    )
+)
+
+
+
+fig_linea_terra.update_layout(
+    title="Frecuencia por Líneas Terrapuerto",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_linea_terra.update_yaxes(range=[0,1.2])
+fig_linea_terra.update_yaxes(tickformat=".0%")
+
+#-------------------------------grafico por línea Los Heroes---------------------------
+fig_linea_lh=go.Figure()
+
+fig_linea_lh.add_trace(
+    go.Scatter(
+        x=tabla2_L2["Semana"],
+        y=tabla2_L2["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L2["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L2"
+    )
+)
+
+fig_linea_lh.add_trace(
+    go.Scatter(
+        x=tabla2_L3["Semana"],
+        y=tabla2_L3["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L3["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L3"
+    )
+)
+
+fig_linea_lh.add_trace(
+    go.Scatter(
+        x=tabla2_L4["Semana"],
+        y=tabla2_L4["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L4["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L4"
+    )
+)
+fig_linea_lh.add_trace(
+    go.Scatter(
+        x=tabla2_L5["Semana"],
+        y=tabla2_L5["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L5["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L5"
+    )
+)
+fig_linea_lh.add_trace(
+    go.Scatter(
+        x=tabla2_L7["Semana"],
+        y=tabla2_L7["Frecuencia"],
+        mode="lines+markers+text",
+        text=tabla2_L7["Frecuencia"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=10, color='black', family='Arial Black'),
+        textposition="top center",
+        name="L7"
+    )
+)
+
+fig_linea_lh.update_layout(
+    title="Frecuencia por Líneas Los Heroes",
+    xaxis_title="Semana",
+    yaxis_title="%",
+    template="ygridoff"
+)
+fig_linea_lh.update_yaxes(range=[0,1.2])
+fig_linea_lh.update_yaxes(tickformat=".0%")
+
+
+
+
 
 # ---------------------------
 # Mostrar KPI
@@ -349,8 +716,9 @@ st.plotly_chart(fig)
 st.markdown("---")
 st.plotly_chart(fig_frecTerm)
 
-
-
-
-
-
+st.markdown("---")
+st.plotly_chart(fig_linea_paipo)
+st.markdown("---")
+st.plotly_chart(fig_linea_terra)
+st.markdown("---")
+st.plotly_chart(fig_linea_lh)

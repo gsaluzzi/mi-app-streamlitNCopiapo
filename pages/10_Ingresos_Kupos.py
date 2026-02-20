@@ -3,11 +3,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase
+from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa
 from utilities import get_gsheet_df
 from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
 from ui import render_sidebar_user
+import plotly.express as px
+
 
 
 check_session_timeout()
@@ -40,6 +42,278 @@ df_param= get_gsheet_df(
     sheet_id=SHEET_ID_FAC,
     worksheet_name="Kupos"
 )
+
+# def grafico_recaudacion_apilada_pct(
+#     df,
+#     col_mes="mes",
+#     col_terminal="terminal",
+#     col_valor="recaudacion",
+#     colores_terminales=None
+# ):
+#     # -----------------------------
+#     # Agrupar y calcular porcentajes
+#     # -----------------------------
+    
+#     orden_meses = [
+#         "Septiembre", "Octubre", "Noviembre", "Diciembre","Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+#         "Julio", "Agosto"
+#     ]
+#     df[col_mes] = pd.Categorical(df[col_mes], categories=orden_meses, ordered=True)
+    
+#     resumen = (
+#         df.groupby([col_mes, col_terminal], as_index=False, observed=True)[col_valor]
+#         .sum()
+#     )
+
+#     resumen["total_mes"] = resumen.groupby(col_mes)[col_valor].transform("sum")
+#     resumen["pct"] = resumen[col_valor] / resumen["total_mes"] * 100
+
+#     # -----------------------------
+#     # Orden de meses (tal como vienen)
+#     # -----------------------------
+#     meses2 = resumen[col_mes].unique()
+
+#     # -----------------------------
+#     # Colores fijos por terminal
+#     # -----------------------------
+#     if colores_terminales is None:
+#         colores_terminales = {
+#             "Los Heroes": "#1f77b4",
+#             "Terrapuerto": "#ff7f0e",
+#             "Paipote": "#2ca02c"
+#         }
+
+#     # -----------------------------
+#     # Construcción del gráfico
+#     # -----------------------------
+#     fig = go.Figure()
+
+#     for terminal, color in colores_terminales.items():
+#         df_t = resumen[resumen[col_terminal] == terminal]
+
+#         fig.add_bar(
+#             x=df_t[col_mes],
+#             y=df_t["pct"],
+#             name=terminal,
+#             marker_color=color,
+#             text=df_t["pct"].round(1).astype(str) + "%",
+#             textposition="inside",
+#             textfont=dict(size=14, color='white', family='Arial Black'),
+#             hovertemplate=(
+#                 f"<b>{terminal}</b><br>"
+#                 "Mes: %{x}<br>"
+#                 "Participación: %{y:.1f}%<extra></extra>"
+#             )
+#         )
+
+#     # -----------------------------
+#     # Layout
+#     # -----------------------------
+#     fig.update_layout(
+#         barmode="stack",
+#         yaxis=dict(
+#             title="% Recaudación",
+#             ticksuffix="%",
+#             range=[0, 100]
+#         ),
+#         # xaxis=dict(title="Mes"),
+#         legend_title="Terminal",
+#         height=320
+#     )
+#     fig.update_layout(
+#     legend=dict(
+#         orientation="h",          # horizontal
+#         yanchor="top",
+#         y=-0.2,                  # posición vertical (ajusta si hace falta)
+#         xanchor="center",
+#         x=0.5                     # centrada
+#     )
+# )
+
+
+#     return fig
+
+def resaltar_total_fila(row):
+    if row.name == "Total":
+        return ["background-color: #e6f2ff; font-weight: bold"] * len(row)
+    return [""] * len(row)
+
+def formato_moneda_cl(val):
+    if pd.isna(val):
+        return ""
+    return f"${val:,.0f}".replace(",", ".")
+
+def tabla_recaudacion_ultimos_4_meses(
+    df,
+    col_fecha="fecha",
+    col_terminal="Terminal",
+    col_mes="Mes",
+    col_valor="Recaudación",
+    orden_terminales=None,
+    incluir_total=True
+):
+    df = df.copy()
+
+    # ---------------------------------
+    # Fechas y últimos 4 meses reales
+    # ---------------------------------
+    df["fecha_dt"] = pd.to_datetime(df[col_fecha], format="%d-%m-%Y")
+    df["mes_periodo"] = df["fecha_dt"].dt.to_period("M")
+
+    ultimos_4 = df["mes_periodo"].sort_values().unique()[-4:]
+    df = df[df["mes_periodo"].isin(ultimos_4)]
+
+    # ---------------------------------
+    # Orden cronológico real de meses
+    # ---------------------------------
+    orden_meses = (
+        df[["mes_periodo", col_mes]]
+        .drop_duplicates()
+        .sort_values("mes_periodo")[col_mes]
+        .tolist()
+    )
+
+    df[col_mes] = pd.Categorical(
+        df[col_mes],
+        categories=orden_meses,
+        ordered=True
+    )
+
+    # ---------------------------------
+    # Pivot
+    # ---------------------------------
+    tabla = pd.pivot_table(
+        df,
+        values=col_valor,
+        index=col_terminal,
+        columns=col_mes,
+        aggfunc="sum",
+        fill_value=0
+    )
+
+    # ---------------------------------
+    # Orden personalizado de terminales
+    # ---------------------------------
+    if orden_terminales:
+        tabla = tabla.reindex(orden_terminales)
+
+    # ---------------------------------
+    # Ocultar meses en 0
+    # ---------------------------------
+    tabla = tabla.loc[:, (tabla != 0).any(axis=0)]
+
+    # ---------------------------------
+    # Fila TOTAL
+    # ---------------------------------
+    if incluir_total:
+        tabla.loc["Total"] = tabla.sum(axis=0)
+
+    return tabla
+
+
+
+def grafico_recaudacion_apilada_pct_2(
+    df,
+    col_fecha="fecha",
+    col_mes="mes",
+    col_terminal="terminal",
+    col_valor="recaudacion",
+    colores_terminales=None
+):
+    df = df.copy()
+
+    # -----------------------------
+    # Preparar fechas y últimos 4 meses
+    # -----------------------------
+    df["fecha_dt"] = pd.to_datetime(df[col_fecha], format="%d-%m-%Y")
+    df["mes_orden"] = df["fecha_dt"].dt.to_period("M")
+
+    ultimos_4_meses = (
+        df["mes_orden"]
+        .sort_values()
+        .unique()[-4:]
+    )
+
+    df = df[df["mes_orden"].isin(ultimos_4_meses)]
+
+    # -----------------------------
+    # Orden cronológico real
+    # -----------------------------
+    orden_meses = (
+        df[["mes_orden", col_mes]]
+        .drop_duplicates()
+        .sort_values("mes_orden")[col_mes]
+        .tolist()
+    )
+
+    df[col_mes] = pd.Categorical(df[col_mes], categories=orden_meses, ordered=True)
+
+    # -----------------------------
+    # Agrupación y porcentajes
+    # -----------------------------
+    resumen = (
+        df.groupby([col_mes, col_terminal], as_index=False)[col_valor]
+        .sum()
+    )
+
+    resumen["total_mes"] = resumen.groupby(col_mes)[col_valor].transform("sum")
+    resumen["pct"] = resumen[col_valor] / resumen["total_mes"] * 100
+
+    # -----------------------------
+    # Colores fijos
+    # -----------------------------
+    if colores_terminales is None:
+        colores_terminales = {
+            "Los Heroes": "#1f77b4",
+            "Terrapuerto": "#ff7f0e",
+            "Paipote": "#2ca02c"
+        }
+
+    # -----------------------------
+    # Gráfico
+    # -----------------------------
+    fig = go.Figure()
+
+    for terminal, color in colores_terminales.items():
+        df_t = resumen[resumen[col_terminal] == terminal]
+
+        fig.add_bar(
+            x=df_t[col_mes],
+            y=df_t["pct"],
+            name=terminal,
+            marker_color=color,
+            text=df_t["pct"].round(1).astype(str) + "%",
+            textposition="inside",
+            textfont=dict(size=14, color='white', family='Arial Black'),
+            hovertemplate=(
+                f"<b>{terminal}</b><br>"
+                "Mes: %{x}<br>"
+                "Participación: %{y:.1f}%<extra></extra>"
+            )
+        )
+
+    # -----------------------------
+    # Layout
+    # -----------------------------
+    fig.update_layout(
+        barmode="stack",
+        yaxis=dict(title="% Recaudación", ticksuffix="%", range=[0, 100]),
+        height=320,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        )
+    )
+
+    return fig
+
+
+
+
+
 
 columnas_numericas2 = [
     "Costo validadores",
@@ -128,14 +402,31 @@ fig.update_layout(
     margin=dict(t=70, b=40)
 )
 
+transacciones = transacciones.rename(columns={
+    "fecha": "Fecha",
+    "transacciones": "Transacciones",
+    "recaudación":"Recaudación",
+    "comisión":"Comisión",
+    "waybill number":"Waybill number",
+    "servicio":"Servicio"
+})
+
+transacciones["Terminal"] = transacciones["Servicio"].apply(asignarTerminal)
+transacciones["Semana"]= semana_relativa(transacciones["Fecha"], "2025-10-13")
+transacciones["Fecha"] = pd.to_datetime(transacciones["Fecha"], dayfirst=True)
+
+meses = {
+    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+    5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+    9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+}
+
+transacciones["Mes"] = transacciones["Fecha"].dt.month.map(meses)
+transacciones["Año"] = transacciones["Fecha"].dt.year
 
 
-
-
-
-
-recaudacion_total=transacciones["recaudación"].sum()
-comisiones_total=transacciones["comisión"].sum()
+recaudacion_total=transacciones["Recaudación"].sum()
+comisiones_total=transacciones["Comisión"].sum()
 soporte_total=df_param["Costo validadores"].sum()
 credito_total=df_param["Cuota credito"].sum()
 
@@ -144,6 +435,25 @@ recaudacion_efectiva=recaudacion_total-comisiones_total-soporte_total-credito_to
 abonado_total=df_ScotKupos["Abono"].sum()
 
 diferencia=recaudacion_efectiva-abonado_total
+
+
+fig2 = grafico_recaudacion_apilada_pct_2(transacciones, col_mes="Mes", col_terminal="Terminal", col_valor="Recaudación", col_fecha="Fecha")
+
+# orden_meses = [
+#     "Septiembre", "Octubre", "Noviembre", "Diciembre",
+#     "Enero", "Febrero", "Marzo", "Abril",
+#     "Mayo", "Junio", "Julio", "Agosto"
+# ]
+
+tabla_2 = tabla_recaudacion_ultimos_4_meses(transacciones, col_fecha="Fecha",orden_terminales=["Paipote", "Terrapuerto", "Los Heroes"])
+styler = (
+    tabla_2
+    .style
+    .apply(resaltar_total_fila, axis=1)
+    .format(lambda x: f"${x:,.0f}" if pd.notna(x) else "-")
+)
+# tabla_2=tabla_2.reset_index()
+
 
 st.title("📊 Ingresos Kupos")
 st.markdown("---")
@@ -168,7 +478,7 @@ with col5:
 st.markdown("---")
 
 subheader_custom("Abonos")
-col6, col7 = st.columns([4,1])
+col6, col7, col8 = st.columns([3,1,1])
 
 with col6:
     st.plotly_chart(fig)
@@ -177,6 +487,18 @@ with col7:
     subheader_custom("", size=60)
     metric_coloreado("Total Abonos", abonado_total, delta=None, color_texto='white', color_fondo="#1a8486", formato="moneda")
 
-st.markdown("---")
+with col8:
+    subheader_custom("", size=60)
+    metric_coloreado("Desfase", diferencia, delta=None, color_texto='white', color_fondo="#162b7f", formato="moneda")
 
-metric_coloreado("Desfase", diferencia, delta=None, color_texto='white', color_fondo="#162b7f", formato="moneda")
+
+st.markdown("---")
+subheader_custom("Recaudación por Terminal y Línea", size=20)
+col9, col10= st.columns([1,1])
+with col9:
+    st.plotly_chart(fig2, use_container_width=True)
+    
+with col10:
+    subheader_custom("", size=40)
+    st.dataframe(styler, use_container_width=True, hide_index=False)
+
