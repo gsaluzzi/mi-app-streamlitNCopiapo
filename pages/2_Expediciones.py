@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
-from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase, tipo_dia_chile
+from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase
 import plotly.graph_objects as go
 from utilities import get_gsheet_df
 import datetime as dt
 from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
 from ui import render_sidebar_user
-
+import holidays
 
 
 check_session_timeout()
@@ -23,6 +23,20 @@ st.set_page_config(
 # Cargar datos
 # ---------------------------
 # df = pd.read_excel("data/Expediciones_Maestro.xlsx")
+
+
+feriados_cl = holidays.Chile()
+
+def tipo_dia_chile(fecha):
+    if fecha in feriados_cl:
+        return "Domingo"
+    elif fecha.weekday() < 5:
+        return "Laboral"
+    elif fecha.weekday() == 5:
+        return "Sábado"
+    else:
+        return "Domingo"
+
 
 @st.cache_data(ttl=3600)
 def get_table_cached(table_name):

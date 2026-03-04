@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 from supabase import create_client
 from plotly.subplots import make_subplots
-import holidays
+
 
 
 
@@ -469,17 +469,7 @@ def grafico_carga_3_meses(
     return fig
 
 
-feriados_cl = holidays.Chile()
 
-def tipo_dia_chile(fecha):
-    if fecha in feriados_cl:
-        return "Domingo"
-    elif fecha.weekday() < 5:
-        return "Laboral"
-    elif fecha.weekday() == 5:
-        return "Sábado"
-    else:
-        return "Domingo"
     
 
 

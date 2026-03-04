@@ -3,11 +3,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa, tipo_dia_chile
+from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa
 from utilities import get_gsheet_df
 from auth.permissions import require_auth, check_session_timeout
 from ui import render_sidebar_user
 import plotly.express as px
+import holidays
+
 
 
 
@@ -24,6 +26,18 @@ def get_table_cached(table_name):
 
 transacciones = get_table_cached("transacciones")
 expediciones = get_table_cached("expediciones")
+
+feriados_cl = holidays.Chile()
+
+def tipo_dia_chile(fecha):
+    if fecha in feriados_cl:
+        return "Domingo"
+    elif fecha.weekday() < 5:
+        return "Laboral"
+    elif fecha.weekday() == 5:
+        return "Sábado"
+    else:
+        return "Domingo"
 
 
 meses = {
