@@ -24,6 +24,7 @@ google-auth-oauthlib==1.2.4
 gspread==6.2.1
 h11==0.16.0
 h2==4.3.0
+holidays==0.91
 hpack==4.1.0
 httpcore==1.0.9
 httpx==0.28.1
