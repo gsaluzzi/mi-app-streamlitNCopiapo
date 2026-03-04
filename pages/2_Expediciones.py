@@ -8,6 +8,9 @@ from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
 from ui import render_sidebar_user
 import holidays
+from plotly.subplots import make_subplots
+
+
 
 
 check_session_timeout()
@@ -374,7 +377,11 @@ tabla_exp_linea3=pd.pivot_table(tabla_exp_linea2,
                      aggfunc="sum")
 tabla_exp_linea3=tabla_exp_linea3.reset_index()
 
+tabla_exp_linea3["%Cumplimiento"]=(tabla_exp_linea3["Expedicion"]/tabla_exp_linea3["PO"])
+
 fig_exp=go.Figure()
+
+fig_exp = make_subplots(specs=[[{"secondary_y": True}]])
 
 fig_exp.add_trace(
     go.Scatter(
@@ -385,7 +392,8 @@ fig_exp.add_trace(
         textfont=dict(size=14, color='black', family='Arial Black'),
         textposition="top center",
         name="Expediciones Reales"
-    )
+    ),
+    secondary_y=False
 )
 fig_exp.add_trace(
     go.Scatter(
@@ -396,8 +404,23 @@ fig_exp.add_trace(
         textfont=dict(size=14, color='black', family='Arial Black'),
         textposition="top center",
         name="Expediciones PO"
-    )
+    ),
+    secondary_y=False
 )
+fig_exp.add_trace(
+    go.Scatter(
+        x=tabla_exp_linea3["Fecha"],
+        y=tabla_exp_linea3["%Cumplimiento"],
+        mode="lines+markers+text",
+        text=tabla_exp_linea3["%Cumplimiento"].apply(lambda x: f"{x:.0%}"),
+        textfont=dict(size=12, color='black', family='Arial Black'),
+        textposition="top center",
+        name="% Cumplimiento PO"
+    ),
+    secondary_y=True
+)
+
+
 
 # meta=0.95
 # color_linea="#2C3E50"
@@ -409,7 +432,7 @@ fig_exp.add_trace(
 #         annotation_position="top left"
 #     )
 
-fig_exp.update_layout(title="Expediciones Totales por día", template='ygridoff',
+fig_exp.update_layout(title="Expediciones Totales por día", template='ygridoff', height=600,
                       legend=dict(
             orientation="h",
             yanchor="top",
@@ -417,7 +440,8 @@ fig_exp.update_layout(title="Expediciones Totales por día", template='ygridoff'
             xanchor="center",
             x=0.5
         ))
-fig_exp.update_yaxes(range=[tabla_exp_linea3["Expedicion"].min()*0.7,tabla_exp_linea3["Expedicion"].max()*1.3])
+fig_exp.update_yaxes(range=[tabla_exp_linea3["Expedicion"].min()*0.7,tabla_exp_linea3["Expedicion"].max()*1.8], secondary_y=False)
+fig_exp.update_yaxes(range=[0,1.2], secondary_y=True, tickformat=".0%")
 
 
 

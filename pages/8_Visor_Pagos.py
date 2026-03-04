@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from componentes import subheader_custom
+from componentes import subheader_custom, mostrar_tabla_financiera
 from utilities import get_gsheet_df
 from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
@@ -115,6 +115,14 @@ df_fac= get_gsheet_df(
     worksheet_name="Facturas"
 )
 
+df_rec= get_gsheet_df(
+    sheet_id=SHEET_ID_FAC,
+    worksheet_name="RECURRENTES"
+)
+
+df_rec2 = df_rec.drop(columns=["PERIODICIDAD", "TIPO"])
+
+
 df = df_fac.copy()
 
 # Fechas a datetime
@@ -139,33 +147,49 @@ fig_seguros = grafico_monto_por_mes_estado(df_seguros)
 st.title("📊 Visor de Pagos")
 st.markdown("---")
 
-col1, col2= st.columns(2)
+# col1, col2= st.columns(2)
 
-with col1:
-    subheader_custom("Pagos Mantención Centro de Carga(Copec Voltex)", size=20)
-    st.plotly_chart(fig_voltex, use_container_width=True)
+# with col1:
+#     subheader_custom("Pagos Mantención Centro de Carga(Copec Voltex)", size=20)
+#     st.plotly_chart(fig_voltex, use_container_width=True)
 
-with col2:
-    subheader_custom("Pagos Energía Flota(CGE/EMOAC)", size=20)
-    st.plotly_chart(fig_cge, use_container_width=True)
+# with col2:
+#     subheader_custom("Pagos Energía Flota(CGE/EMOAC)", size=20)
+#     st.plotly_chart(fig_cge, use_container_width=True)
 
+# st.markdown("---")
+
+# col3, col4= st.columns(2)
+
+# with col3:
+#     subheader_custom("Pagos Leasing Centro de Carga(Copec)", size=20)
+#     st.plotly_chart(fig_copec, use_container_width=True)
+
+# with col4:
+#     subheader_custom("Pagos SBS", size=20)
+#     st.plotly_chart(fig_sbs, use_container_width=True)
+
+
+# st.markdown("---")
+
+# col5, col6= st.columns(2)
+
+# with col5:
+#     subheader_custom("Pagos Seguros Generales", size=20)
+#     st.plotly_chart(fig_seguros, use_container_width=True)
+
+
+# st.markdown("---")
+
+columnas_meses = [
+    "OCTUBRE",
+    "NOVIEMBRE",
+    "DICIEMBRE",
+    "ENERO",
+    "FEBRERO",
+    "MARZO"
+]
+
+subheader_custom("Pagos Recurrentes", size=30)
+mostrar_tabla_financiera(df_rec2, columnas_meses)
 st.markdown("---")
-
-col3, col4= st.columns(2)
-
-with col3:
-    subheader_custom("Pagos Leasing Centro de Carga(Copec)", size=20)
-    st.plotly_chart(fig_copec, use_container_width=True)
-
-with col4:
-    subheader_custom("Pagos SBS", size=20)
-    st.plotly_chart(fig_sbs, use_container_width=True)
-
-
-st.markdown("---")
-
-col5, col6= st.columns(2)
-
-with col5:
-    subheader_custom("Pagos Seguros Generales", size=20)
-    st.plotly_chart(fig_seguros, use_container_width=True)
