@@ -29,9 +29,9 @@ st.set_page_config(
 def get_table_cached(table_name):
     return fetch_all_from_supabase(table_name)
 
-df = get_table_cached("regularidad")
+df2 = get_table_cached("regularidad")
 
-df = df.rename(columns={    
+df2 = df2.rename(columns={    
     "fecha": "Fecha",
     "promedio": "Promedio",
     "servicio": "Servicio",
@@ -39,7 +39,7 @@ df = df.rename(columns={
     "sentido": "Sentido"
 })
 
-df["Fecha"] = pd.to_datetime(df["Fecha"], dayfirst=True)
+df2["Fecha"] = pd.to_datetime(df2["Fecha"], dayfirst=True)
 
 lineas={
     "1248":"L1",
@@ -56,9 +56,9 @@ lineas={
     "1259":"L12"   
 }
 
-df["Linea"] = df["Servicio"].map(lineas)
-df["Terminal"] = df["Linea"].apply(asignarTerminal)
-df["Semana"]= semana_relativa(df["Fecha"], "2025-10-13")
+df2["Linea"] = df2["Servicio"].map(lineas)
+df2["Terminal"] = df2["Linea"].apply(asignarTerminal)
+df2["Semana"]= semana_relativa(df2["Fecha"], "2025-10-13")
 
 
 # cols_numericas = [col for col in df.columns if isinstance(col, int)]
@@ -78,15 +78,15 @@ st.sidebar.header("Filtros")
 #     value=[df["Fecha"].min(), df["Fecha"].max()]
 # )
 
-fecha_max = df["Fecha"].max()
+fecha_max = df2["Fecha"].max()
 fecha_inicio_default = fecha_max - dt.timedelta(days=14)
 
 
 rango_fechas = st.sidebar.date_input(
     "Rango de fechas",
     value=[fecha_inicio_default, fecha_max],
-    min_value=df["Fecha"].min(),
-    max_value=df["Fecha"].max()
+    min_value=df2["Fecha"].min(),
+    max_value=df2["Fecha"].max()
 )
 
 if not (isinstance(rango_fechas, (list, tuple)) and len(rango_fechas) == 2):
@@ -95,9 +95,9 @@ if not (isinstance(rango_fechas, (list, tuple)) and len(rango_fechas) == 2):
 fecha_inicio, fecha_fin = rango_fechas
 
 
-df_filtrado = df[
-    (df["Fecha"] >= pd.to_datetime(fecha_inicio)) &
-    (df["Fecha"] <= pd.to_datetime(fecha_fin))
+df_filtrado = df2[
+    (df2["Fecha"] >= pd.to_datetime(fecha_inicio)) &
+    (df2["Fecha"] <= pd.to_datetime(fecha_fin))
 ]
 
 df_filtrado["Promedio"]=df_filtrado["Promedio"]*1.035
@@ -132,6 +132,9 @@ if len(df_filtrado_lh) > 0:
 else:
     porcentaje_validas_lh = 0
 
+semana_actual=df2["Semana"].max()
+filtro_semana = semana_actual-16
+df=df2[df2["Semana"]>filtro_semana]
 
 
 tabla_evo=pd.pivot_table(df, 

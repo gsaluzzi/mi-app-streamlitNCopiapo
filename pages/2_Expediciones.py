@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
-from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase
+from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase, tipo_dia_chile
 import plotly.graph_objects as go
+from utilities import get_gsheet_df
 import datetime as dt
 from auth.permissions import require_auth, check_session_timeout
 # from auth.auth import check_session_timeout
@@ -27,10 +28,17 @@ st.set_page_config(
 def get_table_cached(table_name):
     return fetch_all_from_supabase(table_name)
 
-df = get_table_cached("expediciones")
+df2 = get_table_cached("expediciones")
+
+SHEET_ID_FAC = "1N7glUY1cv2bO-H0MZeGtxL0VlNd7f47YohXQOH3TjCY"
+
+df_po= get_gsheet_df(
+    sheet_id=SHEET_ID_FAC,
+    worksheet_name="PO"
+)
 
 
-df = df.rename(columns={
+df2 = df2.rename(columns={
     "fecha": "Fecha",
     "estado": "Estado",
     "terminal": "Terminal",
@@ -38,13 +46,22 @@ df = df.rename(columns={
 })
 
 
-df["Fecha"] = pd.to_datetime(df["Fecha"], dayfirst=True)
-df["Estado"] = df["Estado"].str.lower().str.strip()
-df["Terminal"] = df["Servicio"].apply(asignarTerminal)
-df["Semana"]= semana_relativa(df["Fecha"], "2025-10-13")
-df["es_valida"]= (df["Estado"].str.lower() == "valida").astype(int)
+df2["Fecha"] = pd.to_datetime(df2["Fecha"], dayfirst=True)
+df2["Estado"] = df2["Estado"].str.lower().str.strip()
+df2["Terminal"] = df2["Servicio"].apply(asignarTerminal)
+df2["Semana"]= semana_relativa(df2["Fecha"], "2025-10-13")
+df2["es_valida"]= (df2["Estado"].str.lower() == "valida").astype(int)
 
-df = df[df['causa']!='Cortadas por inverso']
+df2 = df2[df2['causa']!='Cortadas por inverso']
+df2["Expedicion"]=1
+df2["Tipo dia"] = df2["Fecha"].apply(tipo_dia_chile)
+
+df2["Tipo"] = "Transitorio"
+df2.loc[df2["Fecha"] < "2026-03-01", "Tipo"] = "Estival"
+
+
+
+
 
 # ---------------------------
 # Filtro por fechas
@@ -56,15 +73,15 @@ st.sidebar.header("Filtros")
 #     value=[df["Fecha"].min(), df["Fecha"].max()]
 # )
 
-fecha_max = df["Fecha"].max()
+fecha_max = df2["Fecha"].max()
 fecha_inicio_default = fecha_max - dt.timedelta(days=14)
 
 
 rango_fechas = st.sidebar.date_input(
     "Rango de fechas",
     value=[fecha_inicio_default, fecha_max],
-    min_value=df["Fecha"].min(),
-    max_value=df["Fecha"].max()
+    min_value=df2["Fecha"].min(),
+    max_value=df2["Fecha"].max()
 )
 
 if not (isinstance(rango_fechas, (list, tuple)) and len(rango_fechas) == 2):
@@ -75,9 +92,9 @@ fecha_inicio, fecha_fin = rango_fechas
 
 
 
-df_filtrado = df[
-    (df["Fecha"] >= pd.to_datetime(fecha_inicio)) &
-    (df["Fecha"] <= pd.to_datetime(fecha_fin))
+df_filtrado = df2[
+    (df2["Fecha"] >= pd.to_datetime(fecha_inicio)) &
+    (df2["Fecha"] <= pd.to_datetime(fecha_fin))
 ]
 
 # ---------------------------
@@ -117,6 +134,9 @@ else:
 # KPI: % de válidas SEMANA (TABLA)
 # ---------------------------
 
+semana_actual=df2["Semana"].max()
+filtro_semana = semana_actual-16
+df=df2[df2["Semana"]>filtro_semana]
 
 
 tabla_evo=pd.pivot_table(df, 
@@ -125,6 +145,9 @@ tabla_evo=pd.pivot_table(df,
                      aggfunc="mean")
 
 tabla_evo = tabla_evo.reset_index()
+# semana_actual=tabla_evo["Semana"].max()
+# filtro_semana = semana_actual-16
+# tabla_evo2=tabla_evo[tabla_evo["Semana"]>filtro_semana]
 
 
 fig_evo=go.Figure()
@@ -164,12 +187,15 @@ fig_evo.update_yaxes(tickformat=".0%")
 
 
 
-tabla_term=pd.pivot_table(df, 
+tabla_term1=pd.pivot_table(df, 
                      values=["es_valida"],
                      index="Semana",
                      columns="Terminal",
                      aggfunc="mean")
-tabla_term = tabla_term.reset_index()
+tabla_term1 = tabla_term1.reset_index()
+
+
+tabla_term=tabla_term1[tabla_term1["Semana"]>filtro_semana]
 
 
 fig_term = go.Figure()
@@ -214,6 +240,13 @@ fig_term.update_layout(
     title="Porcentaje de Válidas por Semana y Terminal",
     xaxis_title="Semana",
     yaxis_title="%",
+    legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        ),
     template="ygridoff"
 )
 fig_term.update_yaxes(range=[0.6,1.1])
@@ -291,9 +324,96 @@ with col4:
     )
 
 
+terminales = sorted(df_filtrado["Terminal"].unique())
+opciones = ["TODOS"] + terminales
+
+st.markdown("---")
+st.subheader("N° Expediciones con respecto al Plan")
+col1, col2 = st.columns([1,4])
+with col1:
+    terminal_sel = st.selectbox("Selecciona Terminal", opciones)
+
+if terminal_sel == "TODOS":
+    df_filtrado2= df_filtrado.copy()
+else:
+    df_filtrado2 = df_filtrado[df_filtrado["Terminal"] == terminal_sel]
+
+tabla_exp=pd.pivot_table(df_filtrado2, 
+                     values=["Expedicion"],
+                     index="Fecha",
+                     aggfunc="sum")
+tabla_exp = tabla_exp.reset_index()
+
+
+tabla_exp_linea=pd.pivot_table(df_filtrado2, 
+                     values=["Expedicion"],
+                     index=["Fecha","Servicio","Tipo dia", "Tipo"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_linea=tabla_exp_linea.reset_index()
+tabla_exp_linea2=pd.merge(tabla_exp_linea, df_po, on=["Servicio","Tipo dia","Tipo"], how="left")
+
+tabla_exp_linea3=pd.pivot_table(tabla_exp_linea2, 
+                     values=["Expedicion", "PO"],
+                     index=["Fecha"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_linea3=tabla_exp_linea3.reset_index()
+
+fig_exp=go.Figure()
+
+fig_exp.add_trace(
+    go.Scatter(
+        x=tabla_exp_linea3["Fecha"],
+        y=tabla_exp_linea3["Expedicion"],
+        mode="lines+markers+text",
+        text=tabla_exp_linea3["Expedicion"],
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="Expediciones Reales"
+    )
+)
+fig_exp.add_trace(
+    go.Scatter(
+        x=tabla_exp_linea3["Fecha"],
+        y=tabla_exp_linea3["PO"],
+        mode="lines+markers+text",
+        text=tabla_exp_linea3["PO"],
+        textfont=dict(size=14, color='black', family='Arial Black'),
+        textposition="top center",
+        name="Expediciones PO"
+    )
+)
+
+# meta=0.95
+# color_linea="#2C3E50"
+# fig_evo.add_hline(
+#         y=meta,
+#         line_dash="dash",
+#         line_color=color_linea,
+#         annotation_text="Meta",
+#         annotation_position="top left"
+#     )
+
+fig_exp.update_layout(title="Expediciones Totales por día", template='ygridoff',
+                      legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        ))
+fig_exp.update_yaxes(range=[tabla_exp_linea3["Expedicion"].min()*0.7,tabla_exp_linea3["Expedicion"].max()*1.3])
+
+
+
+
+
+st.plotly_chart(fig_exp)
 st.markdown("---")
 st.subheader("Evolución Semanal")
 st.plotly_chart(fig_evo)
+st.markdown("---")
 st.plotly_chart(fig_term)
 
 tabla_txn2=tabla_txn.copy()
@@ -617,6 +737,7 @@ st.markdown("---")
 st.plotly_chart(fig_terra)
 st.markdown("---")
 st.plotly_chart(fig_lh)
-
+st.markdown("---")
+st.dataframe(tabla_exp_linea3)
 
 

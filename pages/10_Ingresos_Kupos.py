@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa
+from componentes import subheader_custom, metric_coloreado, fetch_all_from_supabase, asignarTerminal, semana_relativa, tipo_dia_chile
 from utilities import get_gsheet_df
 from auth.permissions import require_auth, check_session_timeout
 from ui import render_sidebar_user
@@ -42,6 +42,11 @@ df_Scot= get_gsheet_df(
 df_param= get_gsheet_df(
     sheet_id=SHEET_ID_FAC,
     worksheet_name="Kupos"
+)
+
+df_po= get_gsheet_df(
+    sheet_id=SHEET_ID_FAC,
+    worksheet_name="PO"
 )
 
 expediciones = expediciones.rename(columns={
@@ -549,6 +554,25 @@ if mes_sel == "TODOS":
 else:
     expediciones_filtrado = expediciones[expediciones["Mes"] == mes_sel]
 
+expediciones_filtrado["Tipo dia"] = expediciones_filtrado["Fecha"].apply(tipo_dia_chile)
+
+
+
+tabla_exp_dia=pd.pivot_table(expediciones_filtrado, 
+                     values=["Expediciones"],
+                     index=["Fecha","Servicio","Tipo dia"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_dia=tabla_exp_dia.reset_index()
+tabla_exp_dia2=pd.merge(tabla_exp_dia, df_po, on=["Servicio","Tipo dia"], how="left")
+tabla_exp_dia3=pd.pivot_table(tabla_exp_dia2, 
+                     values=["Expediciones","PO"],
+                     index=["Servicio"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_dia3=tabla_exp_dia3.reset_index()
+
+
 
 tabla_lh=pd.pivot_table(transacciones_filtrado[transacciones_filtrado["Terminal"]=="Los Heroes"], 
                      values=["Recaudación"],
@@ -618,3 +642,8 @@ with col15:
     .format({"Recaudación" : lambda x: f"${x:,.0f}" if pd.notna(x) else "-", 
              "Expediciones": lambda x: f"{x:,.0f}" if pd.notna(x) else "-",
              "RecXExp": lambda x: f"${x:,.0f}" if pd.notna(x) else "-"}), use_container_width=True)
+
+st.markdown("---")
+st.dataframe(expediciones_filtrado, use_container_width=True)
+st.dataframe(df_po, use_container_width=True)
+st.dataframe(tabla_exp_dia3, use_container_width=True)

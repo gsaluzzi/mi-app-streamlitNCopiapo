@@ -425,9 +425,17 @@ if pd.isna(prom_domingos):
 factor_faltante = habiles*prom_habiles+sabados*prom_sabados+domingos*prom_domingos
 # Factor_pago=(list(promedios_tot.values())[0]*0.6 + porcentaje_regularidad*0.3 + porcentaje_puntualidad*0.1)/100
 
+# print(habiles)
+# print(prom_habiles)
+# print(sabados)
+# print(prom_sabados)
+# print(domingos)
+# print(prom_domingos)
+
+
 recaudacion=recaudacion_actual+factor_faltante
-subsidio_fijo=621637500
-subsidio_variable=207212500
+subsidio_fijo=650473000
+subsidio_variable= 867297000 - 650473000
 # subsidio_variable=207212500*0.85
 total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 
@@ -448,7 +456,7 @@ total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 #     ]
 # })
 
-if df_Scot_rrhh_filtrado["Monto"].sum()<100000000:
+if df_Scot_rrhh_filtrado["Monto"].sum()<300000000:
     personal=300000000
 else:
     personal=df_Scot_rrhh_filtrado["Monto"].sum()
