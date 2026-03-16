@@ -176,6 +176,43 @@ def resaltar_total_fila(row):
         return ["background-color: #e6f2ff; font-weight: bold"] * len(row)
     return [""] * len(row)
 
+def resaltar_total_fila2(row):
+    if row["Mes"] == "Total":
+        return ["background-color: #e6f2ff; font-weight: bold"] * len(row)
+    return [""] * len(row)
+
+def mostrar_tabla_monedas(df, columnas_monedas):
+
+    df = df.copy()
+    marker_color="#E7F9B8"
+    # ---- formato moneda ----
+    formato = {col: "${:,.0f}".format for col in columnas_monedas}
+
+    # ---- resaltar columna ingreso neto ----
+    def resaltar_ingreso_neto(col):
+        if col.name == "Ingreso Neto":
+            return ["background-color: #C0F4F4; font-weight: normal;" for _ in col]
+        return [""] * len(col)
+
+    # ---- resaltar columna abono kupos ----
+    def resaltar_abono_kupos(col):
+        if col.name == "Abonos Kupos":
+            return ["background-color: #E7F9B8; font-weight: normal;" for _ in col]
+        return [""] * len(col)
+
+    styler = (
+        df.style
+        .format(formato)
+        .apply(resaltar_ingreso_neto)
+        .apply(resaltar_abono_kupos)
+        .apply(resaltar_total_fila2, axis=1)
+    )
+
+    st.dataframe(styler, use_container_width=True, hide_index=True)
+
+
+
+
 def formato_moneda_cl(val):
     if pd.isna(val):
         return ""
@@ -355,7 +392,8 @@ def grafico_recaudacion_apilada_pct_2(
 
 columnas_numericas2 = [
     "Costo validadores",
-    "Cuota credito"
+    "Cuota credito",
+    "Ajustes"
 ]
 
 for col in columnas_numericas2:
@@ -463,7 +501,7 @@ transacciones["Mes"] = transacciones["Fecha"].dt.month.map(meses)
 transacciones["Año"] = transacciones["Fecha"].dt.year
 
 
-recaudacion_total=transacciones["Recaudación"].sum()
+recaudacion_total=transacciones["Recaudación"].sum() + df_param["Ajustes"].sum()
 comisiones_total=transacciones["Comisión"].sum()
 soporte_total=df_param["Costo validadores"].sum()
 credito_total=df_param["Cuota credito"].sum()
@@ -473,6 +511,64 @@ recaudacion_efectiva=recaudacion_total-comisiones_total-soporte_total-credito_to
 abonado_total=df_ScotKupos["Abono"].sum()
 
 diferencia=recaudacion_efectiva-abonado_total
+
+
+transacciones_mes=pd.pivot_table(transacciones, 
+                     values=["Recaudación", "Comisión"],
+                     index=["Mes"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+
+tabla_mes2=pd.merge(transacciones_mes, df_param, on=["Mes"], how="left")
+tabla_mes3 = tabla_mes2.drop(columns=["Año"])
+
+columnas_visibles = [
+    "Mes",
+    "Recaudación",
+    "Comisión",
+    "Costo validadores",
+    "Cuota credito",
+    "Ajustes"
+]
+tabla_mes3 = tabla_mes3[columnas_visibles]
+
+Pagos_Kupos=pd.pivot_table(df_ScotKupos, 
+                     values=["Abono"],
+                     index=["Mes Ejercicio"],
+                    #  columns="Terminal",
+                     aggfunc="sum")
+Pagos_Kupos=Pagos_Kupos.reset_index()
+
+Pagos_Kupos = Pagos_Kupos.rename(columns={
+    "Mes Ejercicio": "Mes",
+    "Abono":"Abonos Kupos"
+})
+
+
+
+
+tabla_mes3 = (
+    tabla_mes3.assign(
+        Mes=pd.Categorical(
+            tabla_mes3["Mes"],
+            categories=[
+                "Octubre","Noviembre","Diciembre",
+                "Enero","Febrero","Marzo"
+            ],
+            ordered=True
+        )
+    )
+    .sort_values("Mes")
+)
+tabla_mes3["Ingreso Neto"] = tabla_mes3["Recaudación"] + tabla_mes3["Ajustes"] - tabla_mes3["Comisión"] - tabla_mes3["Costo validadores"] - tabla_mes3["Cuota credito"]
+tabla_mes4=pd.merge(tabla_mes3, Pagos_Kupos, on=["Mes"], how="left")
+totales = tabla_mes4.sum(numeric_only=True)
+
+totales["Mes"] = "Total"
+
+tabla_mes4 = pd.concat([tabla_mes4, pd.DataFrame([totales])], ignore_index=True)
+
+tabla_mes4 = tabla_mes4.fillna(0)
 
 
 fig2 = grafico_recaudacion_apilada_pct_2(transacciones, col_mes="Mes", col_terminal="Terminal", col_valor="Recaudación", col_fecha="Fecha")
@@ -515,15 +611,17 @@ with col5:
 
 st.markdown("---")
 
-subheader_custom("Abonos")
-col6, col7, col8 = st.columns([3,1,1])
+subheader_custom("Recaudación v/s Abonos")
+col6, col8 = st.columns([4,1])
 
 with col6:
-    st.plotly_chart(fig)
+    columnas_monedas = ["Recaudación", "Comisión","Costo validadores","Cuota credito","Ajustes" ,"Ingreso Neto","Abonos Kupos"]
+    mostrar_tabla_monedas(tabla_mes4, columnas_monedas)
 
-with col7:
-    subheader_custom("", size=60)
-    metric_coloreado("Total Abonos", abonado_total, delta=None, color_texto='white', color_fondo="#1a8486", formato="moneda")
+
+# with col7:
+#     subheader_custom("", size=60)
+#     metric_coloreado("Total Abonos", abonado_total, delta=None, color_texto='white', color_fondo="#1a8486", formato="moneda")
 
 with col8:
     subheader_custom("", size=60)
@@ -585,6 +683,9 @@ tabla_exp_dia3=pd.pivot_table(tabla_exp_dia2,
                     #  columns="Terminal",
                      aggfunc="sum")
 tabla_exp_dia3=tabla_exp_dia3.reset_index()
+
+
+
 
 
 
@@ -658,6 +759,6 @@ with col15:
              "RecXExp": lambda x: f"${x:,.0f}" if pd.notna(x) else "-"}), use_container_width=True)
 
 st.markdown("---")
-st.dataframe(expediciones_filtrado, use_container_width=True)
-st.dataframe(df_po, use_container_width=True)
-st.dataframe(tabla_exp_dia3, use_container_width=True)
+# st.dataframe(Pagos_Kupos, use_container_width=True)
+
+# st.dataframe(tabla_exp_dia3, use_container_width=True)

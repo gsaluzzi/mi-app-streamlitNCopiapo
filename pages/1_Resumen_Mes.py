@@ -369,7 +369,7 @@ if len(regularidad_filtrado) > 0:
     if mes_seleccionado=="Enero":
         porcentaje_regularidad=(0.79*(16/31)+1*(15/31))*100
     else:
-        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.05
+        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.09
 else:
     porcentaje_regularidad = 0
 
@@ -473,8 +473,8 @@ else:
     terreno=df_Scot_safu_filtrado["Monto"].sum()
 
 gastos=pagos_sco_proyectado["Monto"].sum()
-cuotabuses=354139725
-cuotacarga=91503268
+cuotabuses=341778433
+cuotacarga=84483400
 credkupos=15289752
 gastos_NP=gastos_NP_filtrado["Monto"].sum()
 total_costos=personal+costo_energia+tecnologia+mantenimiento+permisos+terreno+gastos+cuotabuses+cuotacarga+credkupos

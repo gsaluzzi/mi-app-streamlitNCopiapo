@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase
+from componentes import kpi_gauge, asignarTerminal, semana_relativa, sparkline, metric_coloreado, fetch_all_from_supabase, subheader_custom
 import plotly.graph_objects as go
 from utilities import get_gsheet_df
 import datetime as dt
@@ -292,7 +292,7 @@ tabla_txn=((tabla_txn*100).round(0))
 # ---------------------------
 # Mostrar KPI
 # ---------------------------
-st.title("📊 % Expediciones Válidas")
+st.title("📊 Expediciones")
 st.markdown("---")
 
 
@@ -309,7 +309,7 @@ with colC1:
     metric_coloreado("Expediciones Inválidas", df_filtrado["Estado"].count()-df_filtrado["es_valida"].sum() , delta=None, color_texto='white', color_fondo="#f06868", formato='numero' )
 
 st.markdown("---")
-st.subheader("Global y por Terminal")
+subheader_custom("% Expediciones Válidas Global y por Terminal", size=24)
 col1, col2, col3, col4= st.columns(4)
 
 with col1:
@@ -375,9 +375,17 @@ tabla_exp_linea3=pd.pivot_table(tabla_exp_linea2,
                      index=["Fecha"],
                     #  columns="Terminal",
                      aggfunc="sum")
-tabla_exp_linea3=tabla_exp_linea3.reset_index()
+tabla_exp_linea3.loc["Total"] = tabla_exp_linea3.sum(axis=0)
+# tabla_exp_linea3=tabla_exp_linea3.reset_index()
 
 tabla_exp_linea3["%Cumplimiento"]=(tabla_exp_linea3["Expedicion"]/tabla_exp_linea3["PO"])
+
+
+tabla_tabla = tabla_exp_linea3.copy()
+tabla_grafico = tabla_exp_linea3.drop("Total")
+
+tabla_tabla=tabla_tabla.reset_index()
+tabla_grafico=tabla_grafico.reset_index()
 
 fig_exp=go.Figure()
 
@@ -385,10 +393,10 @@ fig_exp = make_subplots(specs=[[{"secondary_y": True}]])
 
 fig_exp.add_trace(
     go.Scatter(
-        x=tabla_exp_linea3["Fecha"],
-        y=tabla_exp_linea3["Expedicion"],
+        x=tabla_grafico["Fecha"],
+        y=tabla_grafico["Expedicion"],
         mode="lines+markers+text",
-        text=tabla_exp_linea3["Expedicion"],
+        text=tabla_grafico["Expedicion"],
         textfont=dict(size=14, color='black', family='Arial Black'),
         textposition="top center",
         name="Expediciones Reales"
@@ -397,10 +405,10 @@ fig_exp.add_trace(
 )
 fig_exp.add_trace(
     go.Scatter(
-        x=tabla_exp_linea3["Fecha"],
-        y=tabla_exp_linea3["PO"],
+        x=tabla_grafico["Fecha"],
+        y=tabla_grafico["PO"],
         mode="lines+markers+text",
-        text=tabla_exp_linea3["PO"],
+        text=tabla_grafico["PO"],
         textfont=dict(size=14, color='black', family='Arial Black'),
         textposition="top center",
         name="Expediciones PO"
@@ -409,10 +417,10 @@ fig_exp.add_trace(
 )
 fig_exp.add_trace(
     go.Scatter(
-        x=tabla_exp_linea3["Fecha"],
-        y=tabla_exp_linea3["%Cumplimiento"],
+        x=tabla_grafico["Fecha"],
+        y=tabla_grafico["%Cumplimiento"],
         mode="lines+markers+text",
-        text=tabla_exp_linea3["%Cumplimiento"].apply(lambda x: f"{x:.0%}"),
+        text=tabla_grafico["%Cumplimiento"].apply(lambda x: f"{x:.0%}"),
         textfont=dict(size=12, color='black', family='Arial Black'),
         textposition="top center",
         name="% Cumplimiento PO"
@@ -440,7 +448,7 @@ fig_exp.update_layout(title="Expediciones Totales por día", template='ygridoff'
             xanchor="center",
             x=0.5
         ))
-fig_exp.update_yaxes(range=[tabla_exp_linea3["Expedicion"].min()*0.7,tabla_exp_linea3["Expedicion"].max()*1.8], secondary_y=False)
+fig_exp.update_yaxes(range=[tabla_grafico["Expedicion"].min()*0.7,tabla_grafico["Expedicion"].max()*1.8], secondary_y=False)
 fig_exp.update_yaxes(range=[0,1.2], secondary_y=True, tickformat=".0%")
 
 
@@ -776,6 +784,6 @@ st.plotly_chart(fig_terra)
 st.markdown("---")
 st.plotly_chart(fig_lh)
 st.markdown("---")
-st.dataframe(tabla_exp_linea3)
+st.dataframe(tabla_tabla)
 
 
