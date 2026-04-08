@@ -369,7 +369,7 @@ if len(regularidad_filtrado) > 0:
     if mes_seleccionado=="Enero":
         porcentaje_regularidad=(0.79*(16/31)+1*(15/31))*100
     else:
-        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.09
+        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.04
 else:
     porcentaje_regularidad = 0
 
@@ -461,14 +461,14 @@ if df_Scot_rrhh_filtrado["Monto"].sum()<300000000:
 else:
     personal=df_Scot_rrhh_filtrado["Monto"].sum()
 
-costo_energia=45000000
+costo_energia=55000000
 tecnologia=21512134
 mantenimiento=df_Scot_mant_filtrado["Monto"].sum()
 permisos=22500000
 # terreno=144000000*1.19/12 + 6000000
 # terreno=df_Scot_safu_filtrado["Monto"].sum()
 if df_Scot_safu_filtrado["Monto"].sum()==0:
-    terreno=23210930
+    terreno=28210930
 else:
     terreno=df_Scot_safu_filtrado["Monto"].sum()
 

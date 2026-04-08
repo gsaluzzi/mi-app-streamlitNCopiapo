@@ -187,10 +187,10 @@ meses = {
 
 SHEET_ID_FAC = "1N7glUY1cv2bO-H0MZeGtxL0VlNd7f47YohXQOH3TjCY"
 
-df_fac= get_gsheet_df(
-    sheet_id=SHEET_ID_FAC,
-    worksheet_name="Facturas"
-)
+# df_fac= get_gsheet_df(
+#     sheet_id=SHEET_ID_FAC,
+#     worksheet_name="Facturas"
+# )
 
 df_rec= get_gsheet_df(
     sheet_id=SHEET_ID_FAC,
@@ -200,26 +200,26 @@ df_rec= get_gsheet_df(
 df_rec2 = df_rec.drop(columns=["PERIODICIDAD", "TIPO"])
 
 
-df = df_fac.copy()
+# df = df_fac.copy()
 
-# Fechas a datetime
-df["FECHA EMISION"] = pd.to_datetime(df["FECHA EMISION"], dayfirst=True)
-df["FECHA PAGO"] = pd.to_datetime(df["FECHA PAGO"], dayfirst=True, errors="coerce")
+# # Fechas a datetime
+# df["FECHA EMISION"] = pd.to_datetime(df["FECHA EMISION"], dayfirst=True)
+# df["FECHA PAGO"] = pd.to_datetime(df["FECHA PAGO"], dayfirst=True, errors="coerce")
 
-# Monto a número
-df["MONTO"] = pd.to_numeric(df["MONTO"], errors="coerce")
+# # Monto a número
+# df["MONTO"] = pd.to_numeric(df["MONTO"], errors="coerce")
 
-df_VOLTEX = df[df['PROVEEDOR']=='COPEC VOLTEX']
-fig_voltex = grafico_monto_por_mes_estado(df_VOLTEX)
-df_CGE=df[df['PROVEEDOR']=='CGE']
-fig_cge = grafico_monto_por_mes_estado(df_CGE)
-df_COPEC=df[df['PROVEEDOR']=='COPEC LEASING']
-fig_copec = grafico_monto_por_mes_estado(df_COPEC)
-df_sbs=df[df['PROVEEDOR']=='SBS']
-fig_sbs = grafico_monto_por_mes_estado(df_sbs)
+# df_VOLTEX = df[df['PROVEEDOR']=='COPEC VOLTEX']
+# fig_voltex = grafico_monto_por_mes_estado(df_VOLTEX)
+# df_CGE=df[df['PROVEEDOR']=='CGE']
+# fig_cge = grafico_monto_por_mes_estado(df_CGE)
+# df_COPEC=df[df['PROVEEDOR']=='COPEC LEASING']
+# fig_copec = grafico_monto_por_mes_estado(df_COPEC)
+# df_sbs=df[df['PROVEEDOR']=='SBS']
+# fig_sbs = grafico_monto_por_mes_estado(df_sbs)
 
-df_seguros = df[df['PROVEEDOR']=='Seguros G Suramericana']
-fig_seguros = grafico_monto_por_mes_estado(df_seguros)
+# df_seguros = df[df['PROVEEDOR']=='Seguros G Suramericana']
+# fig_seguros = grafico_monto_por_mes_estado(df_seguros)
 
 st.title("📊 Visor de Pagos")
 st.markdown("---")

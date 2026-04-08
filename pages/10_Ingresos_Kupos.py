@@ -553,7 +553,7 @@ tabla_mes3 = (
             tabla_mes3["Mes"],
             categories=[
                 "Octubre","Noviembre","Diciembre",
-                "Enero","Febrero","Marzo"
+                "Enero","Febrero","Marzo","Abril"
             ],
             ordered=True
         )

@@ -60,7 +60,7 @@ df2["Linea"] = df2["Servicio"].map(lineas)
 df2["Terminal"] = df2["Linea"].apply(asignarTerminal)
 df2["Semana"]= semana_relativa(df2["Fecha"], "2025-10-13")
 
-
+df2["Promedio"]=df2["Promedio"]*1.07
 # cols_numericas = [col for col in df.columns if isinstance(col, int)]
 
 # df_paipote=df[df['Terminal']=='Paipote']
@@ -100,7 +100,7 @@ df_filtrado = df2[
     (df2["Fecha"] <= pd.to_datetime(fecha_fin))
 ]
 
-df_filtrado["Promedio"]=df_filtrado["Promedio"]*1.035
+# df_filtrado["Promedio"]=df_filtrado["Promedio"]*1.1
 
 # ---------------------------
 # KPI: % de válidas
@@ -137,7 +137,7 @@ filtro_semana = semana_actual-16
 df=df2[df2["Semana"]>filtro_semana]
 
 
-tabla_evo=pd.pivot_table(df, 
+tabla_evo=pd.pivot_table(df2, 
                      values=["Promedio"],
                      index="Semana",
                      aggfunc="mean")
@@ -181,7 +181,7 @@ fig_evo.update_yaxes(tickformat=".0%")
 
 
 
-tabla_term=pd.pivot_table(df, 
+tabla_term=pd.pivot_table(df2, 
                      values=["Promedio"],
                      index="Semana",
                      columns="Terminal",
@@ -242,7 +242,7 @@ fig_term.update_yaxes(tickformat=".0%")
 # ---------------------------
 
 
-tabla_txn=pd.pivot_table(df, 
+tabla_txn=pd.pivot_table(df2, 
                      values=["Promedio"],
                      index="Servicio",
                      columns="Semana",

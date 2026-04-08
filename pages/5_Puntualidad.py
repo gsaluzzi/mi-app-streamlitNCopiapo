@@ -154,7 +154,7 @@ fig_evo.add_hline(
 
 
 fig_evo.update_layout(title="Puntualidad por semana", template='ygridoff')
-fig_evo.update_yaxes(range=[0, 0.6])
+fig_evo.update_yaxes(range=[0, 1])
 fig_evo.update_yaxes(tickformat=".0%")
 
 
