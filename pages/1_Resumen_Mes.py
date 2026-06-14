@@ -369,7 +369,7 @@ if len(regularidad_filtrado) > 0:
     if mes_seleccionado=="Enero":
         porcentaje_regularidad=(0.79*(16/31)+1*(15/31))*100
     else:
-        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.04
+        porcentaje_regularidad = regularidad_filtrado["Promedio"].mean() * 100*1.03
 else:
     porcentaje_regularidad = 0
 
@@ -456,12 +456,12 @@ total_ingresos=recaudacion+subsidio_fijo+subsidio_variable
 #     ]
 # })
 
-if df_Scot_rrhh_filtrado["Monto"].sum()<300000000:
-    personal=300000000
+if df_Scot_rrhh_filtrado["Monto"].sum()<250000000:
+    personal=380000000
 else:
     personal=df_Scot_rrhh_filtrado["Monto"].sum()
 
-costo_energia=55000000
+costo_energia=65000000
 tecnologia=21512134
 mantenimiento=df_Scot_mant_filtrado["Monto"].sum()
 permisos=22500000
@@ -477,7 +477,7 @@ cuotabuses=341778433
 cuotacarga=84483400
 credkupos=15289752
 gastos_NP=gastos_NP_filtrado["Monto"].sum()
-total_costos=personal+costo_energia+tecnologia+mantenimiento+permisos+terreno+gastos+cuotabuses+cuotacarga+credkupos
+total_costos=personal+costo_energia+tecnologia+mantenimiento+permisos+terreno+gastos+cuotabuses+cuotacarga+credkupos+gastos_NP
 
 
 
@@ -492,7 +492,7 @@ cuotabu_pre=presupuesto_filtrado["Cuota Flota Buses"][clave_mes-1]
 cuotacc_pre=presupuesto_filtrado["Cuota CCarga"][clave_mes-1]
 credku_pre=presupuesto_filtrado["Credito Kupos"][clave_mes-1]
 gastos_NP_pre=0
-total_costos_pre = personal_pre+energia_pre+tecno_pre+mante_pre+segur_pre+terre_pre+gastos_pre+cuotabu_pre+cuotacc_pre+credku_pre
+total_costos_pre = personal_pre+energia_pre+tecno_pre+mante_pre+segur_pre+terre_pre+gastos_pre+cuotabu_pre+cuotacc_pre+credku_pre+gastos_NP_pre
 
 
 

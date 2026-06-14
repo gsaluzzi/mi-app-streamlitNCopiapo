@@ -26,6 +26,7 @@ def get_table_cached(table_name):
 
 transacciones = get_table_cached("transacciones")
 expediciones = get_table_cached("expediciones")
+kilometers = get_table_cached("kilometers")
 
 feriados_cl = holidays.Chile()
 
@@ -553,7 +554,7 @@ tabla_mes3 = (
             tabla_mes3["Mes"],
             categories=[
                 "Octubre","Noviembre","Diciembre",
-                "Enero","Febrero","Marzo","Abril"
+                "Enero","Febrero","Marzo","Abril","Mayo","Junio"
             ],
             ordered=True
         )
@@ -761,4 +762,66 @@ with col15:
 st.markdown("---")
 # st.dataframe(Pagos_Kupos, use_container_width=True)
 
-# st.dataframe(tabla_exp_dia3, use_container_width=True)
+
+expediciones_filtrado2 =expediciones_filtrado[expediciones_filtrado["Mes"].isin(["Marzo", "Abril", "Mayo", "Junio"])]
+expediciones_filtrado2["Patente"] = expediciones_filtrado2["bus"].str.split("/").str[1]
+tabla_exp_dia_patente=pd.pivot_table(expediciones_filtrado2, 
+                     values=["Expediciones"],
+                     index=["Fecha","Patente"],
+                     columns="Terminal",
+                     aggfunc="sum")
+tabla_exp_dia_patente.columns=tabla_exp_dia_patente.columns.droplevel(0)
+tabla_exp_dia_patente=tabla_exp_dia_patente.reset_index()
+kilometers["Patente_km"] = kilometers["maquina"].str.extract(r"\[(.*?)\]")
+
+kilometers_2=pd.pivot_table(kilometers, 
+                     values=["kms"],
+                     index=["fecha","Patente_km"],
+                     columns="servicio",
+                     aggfunc="sum")
+kilometers_2.columns=kilometers_2.columns.droplevel(0)
+kilometers_2=kilometers_2.reset_index()
+
+
+
+
+tabla_exp_dia_patente["Fecha"] = pd.to_datetime(tabla_exp_dia_patente["Fecha"]).dt.normalize()
+kilometers_2["fecha"] = pd.to_datetime(kilometers_2["fecha"]).dt.normalize()
+
+
+kilometers_2 = kilometers_2.rename(columns={
+    "fecha": "Fecha",
+    "Patente_km": "Patente"
+})
+
+df_final = tabla_exp_dia_patente.merge(
+    kilometers_2[["Fecha", "Patente", "Comercial con salida", "No Comercial"]],
+    on=["Fecha", "Patente"],
+    how="left"
+)
+df_final = df_final.fillna(0)
+df_final["exp_total"] = df_final["Los Heroes"] + df_final["Paipote"]+df_final["Terrapuerto"]
+df_final["Mes"] = df_final["Fecha"].dt.month.map(meses)
+
+df_final["LH_KmsCom"] = (df_final["Los Heroes"]/df_final["exp_total"])*df_final["Comercial con salida"]
+df_final["Paipo_KmsCom"] = (df_final["Paipote"]/df_final["exp_total"])*df_final["Comercial con salida"]
+df_final["Terra_KmsCom"] = (df_final["Terrapuerto"]/df_final["exp_total"])*df_final["Comercial con salida"]
+
+df_final["LH_KmsVacio"] = (df_final["Los Heroes"]/df_final["exp_total"])*df_final["No Comercial"]
+df_final["Paipo_KmsVacio"] = (df_final["Paipote"]/df_final["exp_total"])*df_final["No Comercial"]
+df_final["Terra_KmsVacio"] = (df_final["Terrapuerto"]/df_final["exp_total"])*df_final["No Comercial"]
+
+
+evoltivo_kms=pd.pivot_table(df_final, 
+                     values=["LH_KmsCom","LH_KmsVacio", "Paipo_KmsCom","Paipo_KmsVacio","Terra_KmsCom","Terra_KmsVacio" 
+                             ,"Comercial con salida","No Comercial"],
+                    #  index=["LH_KmsCom","LH_KmsVacio"],
+                     columns="Mes",
+                     aggfunc="sum")
+
+
+st.dataframe(df_final, use_container_width=True)
+st.dataframe(evoltivo_kms, use_container_width=True)
+
+
+

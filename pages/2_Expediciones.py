@@ -73,10 +73,10 @@ df2 = df2[df2['causa']!='Cortadas por inverso']
 df2["Expedicion"]=1
 df2["Tipo dia"] = df2["Fecha"].apply(tipo_dia_chile)
 
-df2["Tipo"] = "Transitorio"
-df2.loc[df2["Fecha"] < "2026-03-01", "Tipo"] = "Estival"
-
-
+# df2["Tipo"] = "Transitorio"
+# df2.loc[df2["Fecha"] < "2026-03-01", "Tipo"] = "Estival"
+df2["Tipo"] = "Transitorio Mayo"
+df2.loc[df2["Fecha"] < "2026-05-16", "Tipo"] = "Transitorio"
 
 
 
@@ -193,7 +193,7 @@ fig_evo.add_hline(
 
 
 fig_evo.update_layout(title="% Expediciones válidas por semana", template='ygridoff')
-fig_evo.update_yaxes(range=[0.7,1])
+fig_evo.update_yaxes(range=[0.7,1.1])
 fig_evo.update_yaxes(tickformat=".0%")
 
 
