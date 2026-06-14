@@ -7,6 +7,8 @@ from auth.permissions import require_auth, check_session_timeout
 from ui import render_sidebar_user
 
 
+
+
 from componentes import (
     fetch_all_from_supabase,
     kpi_gauge,
