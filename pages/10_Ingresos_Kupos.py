@@ -51,7 +51,7 @@ SHEET_ID_FAC = "1N7glUY1cv2bO-H0MZeGtxL0VlNd7f47YohXQOH3TjCY"
 
 df_Scot= get_gsheet_df(
     sheet_id=SHEET_ID_FAC,
-    worksheet_name="Hoja 1"
+    worksheet_name="Hoja 2"
 )
 
 df_param= get_gsheet_df(

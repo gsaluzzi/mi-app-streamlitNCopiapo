@@ -103,7 +103,7 @@ presupuesto= get_gsheet_df(
 
 pagos_sco= get_gsheet_df(
     sheet_id=SHEET_ID_PAG,
-    worksheet_name="Hoja 1"
+    worksheet_name="Hoja 2"
 )
 
 
